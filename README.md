@@ -10,6 +10,8 @@ We recommend that those with 0% vision seek assistance in setting up the program
 
 Find out more here: [https://jblquantumguideplay.com/](https://jblquantumguideplay.com/)
 
+> This project originates from [jblquantumguideplay.com](https://jblquantumguideplay.com/). The original source code is outdated — this fork is currently maintained by [Yawei1234](https://github.com/Yawei1234).
+
 ---
 
 ## Features
@@ -108,7 +110,7 @@ Processing is GPU-intensive and runs in parallel with the game. Recommended spec
 
    Or in VS Code: open `guiBeta.py` and select **"Debug using launch.json"** from the Run menu.
 
-> **Note:** The application must be run as Administrator for dxcam screen capture to function correctly.
+> **Note:** If running `guiBeta.py` directly, remember to run the terminal or VS Code as Administrator. dxcam screen capture requires Administrator privileges to function correctly.
 
 ### Prod Mode / Build
 
@@ -153,5 +155,3 @@ Settings are stored in `app/config.json`. Key options:
 ## Contribution
 
 Feel free to collaborate and provide feedback or ask questions about any subject related to the project.
-
-Sinta-se livre para colaborar e fornecer feedback ou tirar dúvidas sobre qualquer assunto relacionado ao projeto.
