@@ -1,0 +1,58 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1920 1080">
+  <rect id="031323_home_practice_wingman" data-name="031323_home_practice_wingman" width="1920"
+    height="1080" style="fill: none" />
+  <image width="1920" height="1080" transform="translate(0 0)"
+    xlink:href="031323_home_practice_wingman.png" />
+  <rect id="GO_" data-name="GO " x="1536" y="1004.7" width="300" height="55" style="fill: aqua" />
+  <rect id="Overpass" x="330" y="195.7" width="347" height="745" style="fill: #f0f" />
+  <rect id="Vertigo" x="694.33" y="195.7" width="347" height="745" style="fill: #f0f" />
+  <rect id="Inferno" x="1058.67" y="195.7" width="347" height="745" style="fill: #f0f" />
+  <rect id="Nuke" x="1423" y="195.7" width="347" height="745" style="fill: #f0f" />
+  <rect id="Open_Party" data-name="Open Party" x="172" y="225.31" width="49.79" height="27.32"
+    style="fill: blue;isolation: isolate;opacity: 0.4000000059604645" />
+  <rect id="Grenade_Camera" data-name="Grenade Camera" x="172" y="260.55" width="49.79"
+    height="27.32" style="fill: blue;isolation: isolate;opacity: 0.4000000059604645" />
+  <rect id="Infinite_Ammo" data-name="Infinite Ammo" x="172" y="296.8" width="49.79" height="27.32"
+    style="fill: blue;isolation: isolate;opacity: 0.4000000059604645" />
+  <rect id="Infinite_Warmup" data-name="Infinite Warmup" x="172" y="333.06" width="49.79"
+    height="27.32" style="fill: blue;isolation: isolate;opacity: 0.4000000059604645" />
+  <rect id="Inventory" x="674.48" y="6.25" width="122.81" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Matchmaking" x="761.55" y="67.53" width="106.93" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Premier" x="583.43" y="114.51" width="80.58" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Competitive" x="668.2" y="114.51" width="100.49" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Wingman" x="772.12" y="114.51" width="90.28" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Casual" x="867.83" y="114.51" width="78.82" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Deathmatch" x="951.83" y="114.51" width="110.73" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Private_Matchmaking" data-name="Private Matchmaking" x="1167.06" y="114.51"
+    width="169.71" height="42.04" style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Practice" x="870.08" y="67.53" width="99.68" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Workshop_Maps" data-name="Workshop Maps" x="972.08" y="67.53" width="124.19"
+    height="42.04" style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Loadout" x="803.42" y="6.25" width="117.96" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Play" x="926.48" y="6.25" width="117.96" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Store" x="1047.76" y="6.25" width="103.66" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="News" x="1155.25" y="6.25" width="87.32" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Arms_Race" data-name="Arms Race" x="1066.56" y="114.51" width="96.33" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Dashboard" x="0.38" y="0.35" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Watch_Matches_and_Tournaments" data-name="Watch Matches and Tournaments" x="64.38"
+    y="0.35" width="64" height="64" style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Settings" x="128.38" y="0.35" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Quit_to_Desktop" data-name="Quit to Desktop" x="192.38" y="0.35" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+</svg>

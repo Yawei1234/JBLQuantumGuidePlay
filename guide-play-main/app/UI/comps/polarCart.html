@@ -1,0 +1,548 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Cartesian to Polar</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,700">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono">
+
+
+    <style>
+        .body {
+            background-color: #363743;
+        }
+        syntax: "<integer>";
+        initial-value: 1;
+        inherits: true;
+        }
+        @property --x {
+        syntax: "<integer>";
+        initial-value: 0;
+        inherits: true;
+        }
+        @property --y {
+        syntax: "<integer>";
+        initial-value: 0;
+        inherits: true;
+        }
+        /* --------------- GENERAL --------------- */
+        * {
+        box-sizing: inherit;
+        margin: 0;
+        border: none;
+        padding: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        }
+
+        html {
+        --k: var(--js, 0);
+        --not-k: calc(1 - var(--k));
+        }
+        html.js {
+        --js: 1 ;
+        }
+
+        body {
+        --s: var(--houdini, 0);
+        --i: var(--narr, 1);
+        --not-i: calc(1 - var(--i));
+        --j: var(--wide, 1);
+        --not-j: calc(1 - var(--j));
+        --x: calc(var(--r)*var(--cos));
+        --y: calc(var(--r)*var(--sin));
+        --u: "";
+        display: grid;
+        grid-gap: 1vmin;
+        grid-template-rows: max-content 1fr max-content;
+        overflow-x: hidden;
+        margin: 0;
+        height: 100vh;
+        font: 400 clamp(.875em, 6.25vw, 1.5em)/1.375 raleway, sans-serif;
+        }
+        @media (max-width: 575px) {
+        body {
+            --wide: 0 ;
+        }
+        }
+        @media (min-width: 470px) {
+        body {
+            --narr: 0 ;
+        }
+        }
+
+        form, pre {
+        background: #100e17;
+        }
+
+        [for], pre {
+        color: #fafafa;
+        }
+
+        pre, output {
+        font-family: ubuntu mono, consolas, monaco, monospace;
+        }
+
+        text, var {
+        font-style: italic;
+        font-family: serif;
+        }
+
+        /* --------------- FORM --------------- */
+        .wrap {
+        --focus: 0;
+        --not-focus: calc(1 - var(--focus));
+        --range: calc(var(--max) - var(--min));
+        --track-w: clamp(4.5em, calc(100vw - 2*Min(4vw, 0.5em)), calc(var(--range)*1px + 1em));
+        --pos: calc(0.5em + (var(--val) - var(--min))/var(--range)*(var(--track-w) - 1em));
+        display: grid;
+        justify-self: stretch;
+        place-content: center;
+        padding: 0.25em Min(4vw, 0.5em);
+        filter: grayScale(var(--not-focus));
+        counter-reset: n var(--n);
+        transition: filter 0.3s;
+        }
+        .wrap--r {
+        --c: #f60c61 ;
+        }
+        .wrap--a {
+        --c: #ff6a00 ;
+        }
+        .wrap > * {
+        align-self: center;
+        }
+        .wrap label {
+        margin: 0 calc(var(--js)*var(--j)*1vw);
+        }
+        .wrap:focus-within {
+        --focus: 1 ;
+        }
+
+        input[type=range] {
+        display: var(--js, none);
+        grid-area: calc(1 + var(--not-j))/calc(1 + var(--j));
+        width: var(--track-w);
+        height: 1em;
+        color: var(--c);
+        cursor: pointer;
+        }
+        input[type=range], input[type=range]::-webkit-slider-thumb, input[type=range]::-webkit-slider-runnable-track {
+        -webkit-appearance: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+        border: none;
+        width: 100%;
+        height: 0.25em;
+        border-radius: 0.125em;
+        background: radial-gradient(circle at var(--pos), transparent calc(var(--js)*(0.5em - 2px)), #ccc calc(var(--js)*(0.5em - 1px)));
+        }
+        input[type=range]::-moz-range-track {
+        border: none;
+        width: 100%;
+        height: 0.25em;
+        border-radius: 0.125em;
+        background: radial-gradient(circle at var(--pos), transparent calc(var(--js)*(0.5em - 2px)), #ccc calc(var(--js)*(0.5em - 1px)));
+        }
+        input[type=range]::-webkit-slider-thumb {
+        margin-top: -0.375em;
+        border: none;
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        background: currentcolor;
+        filter: Invert(var(--not-focus)) brightness(calc(1 + .25*var(--not-focus)));
+        transition: 0.3s;
+        transition-property: transform, filter;
+        }
+        .js input[type=range]::-webkit-slider-thumb {
+        transform: scale(calc(.5*(1 + var(--focus))));
+        }
+        input[type=range]::-moz-range-thumb {
+        margin-top: 0em;
+        border: none;
+        width: 1em;
+        height: 1em;
+        border-radius: 50%;
+        background: currentcolor;
+        filter: Invert(var(--not-focus)) brightness(calc(1 + .25*var(--not-focus)));
+        transition: 0.3s;
+        transition-property: transform, filter;
+        }
+        .js input[type=range]::-moz-range-thumb {
+        transform: scale(calc(.5*(1 + var(--focus))));
+        }
+        input[type=range]:focus {
+        outline: solid 0 transparent;
+        }
+
+        output {
+        border-radius: 5px;
+        text-align: center;
+        counter-reset: val var(--val);
+        }
+        form output {
+        grid-area: calc(1 + var(--i) + var(--not-j))/calc(1 + var(--k)*(var(--not-i) + var(--j)) + var(--not-k));
+        justify-self: start;
+        min-width: 2.5em;
+        margin: calc(var(--js)*(var(--i)*1vw + var(--not-i)*-0.25em)) 0 calc(var(--js)*var(--not-i)*-0.25em) calc(var(--js)*var(--not-i)*1vw);
+        transform: translate(calc(var(--i)*(var(--pos) - 50%)));
+        }
+        @supports (background: conic-gradient(red, tan)) {
+        .js form output {
+            --xy: calc(var(--i)*50%) calc(var(--not-i)*50%);
+            margin-top: calc(var(--not-i)*-0.25em + var(--i)*1vw);
+            border: solid 0.25em transparent;
+            border-radius: 0.5em;
+            --mask:
+                linear-gradient(red, red) padding-box,
+                conic-gradient(from calc(90deg - .5*70deg + var(--i)*90deg) at var(--xy),
+                        red 70deg, transparent 0%)
+                    var(--xy)/ 50% 50% no-repeat border-box;
+            -webkit-mask: var(--mask);
+            mask: var(--mask);
+        }
+        }
+        :not(pre) output {
+        background: var(--c);
+        }
+        output::before {
+        content: counter(val) var(--u);
+        }
+
+        [for=a] {
+        --u: "°" ;
+        }
+
+        /* --------------- VISUAL --------------- */
+        svg {
+        --c: #000;
+        --rf: calc(var(--r)/var(--r-max));
+        --mov:  ;
+        --ang-a: calc(var(--a)*1deg);
+        --sgn-a: clamp(-1, var(--a), 1);
+        --abs-a: calc(var(--sgn-a)*var(--a));
+        --r-arc: calc(.5px*var(--r-min));
+        place-self: stretch;
+        fill: none;
+        }
+        svg * {
+        stroke: var(--c);
+        stroke-width: calc(var(--r-max)*var(--sm, .004px));
+        }
+
+        .axes {
+        --c: #c0c0c0 ;
+        }
+
+        text {
+        stroke: none;
+        }
+
+        text, use, .point {
+        fill: var(--c);
+        }
+
+        .meas, .rad {
+        --sm: .01px ;
+        }
+
+        .meas {
+        --a-cut: clamp(0, calc(var(--abs-a) - 15), 1);
+        --c: #ff6a00 ;
+        }
+
+        g.meas {
+        transform: scaley(var(--sgn-a));
+        }
+
+        .arc {
+        r: var(--r-arc);
+        stroke-dasharray: calc(var(--abs-a)*1px) 360px;
+        }
+
+        .arr {
+        transform: rotate(calc(var(--sgn-a)*var(--ang-a))) translate(var(--r-arc));
+        opacity: var(--a-cut);
+        stroke-linejoin: round;
+        }
+
+        [x2] {
+        transform: var(--mov) scalex(calc(var(--rf)*var(--cos)));
+        }
+
+        [y2] {
+        transform: var(--mov) scaley(calc(var(--rf)*var(--sin)));
+        }
+
+        .guide {
+        --c: #d7d7d7;
+        }
+        .guide[x2] {
+        --mov: translatey(calc(var(--y)*1px)) ;
+        }
+        .guide[y2] {
+        --mov: translatex(calc(var(--x)*1px)) ;
+        }
+
+        .proj {
+        --c: #00908a ;
+        }
+
+        .rad {
+        --c: #f60c61 ;
+        }
+
+        line.proj {
+        --sm: .008px ;
+        }
+
+        line.rad {
+        transform: rotate(calc(var(--a)*1deg)) scalex(var(--rf));
+        }
+
+        .main {
+        --c: #41024f;
+        --sm: .006px;
+        r: calc(var(--r)*1px);
+        }
+
+        .point {
+        stroke: #140027;
+        }
+        .point--x {
+        cx: calc(var(--x)*1px);
+        }
+        .point--y {
+        cy: calc(var(--y)*1px);
+        }
+
+        foreignObject {
+        --h: 1.5em;
+        position: relative;
+        x: calc(-.5*var(--w));
+        y: calc(-.5*var(--h));
+        width: var(--w);
+        height: var(--h);
+        }
+        foreignObject.meas {
+        --w: 6ch;
+        --a-cut: clamp(0, calc(var(--abs-a) - 39), 1);
+        --r-cut: clamp(0, calc(var(--r) - 325), 1);
+        --flag: Min(1, calc(var(--a-cut) + var(--r-cut)));
+        transform: rotate(calc(.5*var(--ang-a))) translate(calc(var(--flag)*(var(--r-arc) + .325*(var(--w) + var(--h))) + (1 - var(--flag))*.4375*var(--r-arc))) rotate(calc(-.5*var(--ang-a)));
+        }
+        foreignObject.rad {
+        --w: 4ch;
+        transform: rotate(calc(var(--ang-a))) translate(calc(var(--r)*.75px)) rotate(calc(-1*var(--ang-a)));
+        }
+        foreignObject.cart {
+        --c: #00908a;
+        --w: 10ch;
+        transform: rotate(calc(var(--ang-a))) translate(calc(var(--r)*1px + .375*(var(--w) + var(--h)))) rotate(calc(-1*var(--ang-a)));
+        opacity: var(--s);
+        }
+        foreignObject.cart output {
+        counter-reset: x var(--x) y var(--y);
+        }
+        foreignObject.cart output::before {
+        content: counter(x) "," counter(y);
+        }
+        foreignObject output {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        padding: 0 2px 2px;
+        transform: translate(-50%, -50%);
+        background: var(--c);
+        }
+
+        /* --------------- CODE --------------- */
+        pre {
+        display: grid;
+        place-content: center;
+        white-space: normal;
+        }
+
+        .token--form {
+        display: flex;
+        }
+        .token--var {
+        color: #a081a7;
+        }
+        .token--func {
+        color: #ffd998;
+        }
+        .token--len {
+        color: #fb86b0;
+        }
+        .token--ang {
+        color: #ffb580;
+        }
+        .token--coord {
+        color: #80c8c5;
+        }
+        .token--oper:first-of-type::before, .token--oper:first-of-type::after, .token--punc + .token--oper::before, .token--punc + .token--oper::after {
+        white-space: pre;
+        content: " ";
+        }
+        .token--oper:last-of-type, .token--coord {
+        opacity: var(--s);
+        }
+    </style>
+</head>
+<body style="--r: 400; --r-min: 50; --r-max: 600; --a: 60; --cos: 0.5; --sin: 0.866">
+    <form>
+    <div class="wrap wrap--r" style="--min: var(--r-min); --max: var(--r-max); --val: var(--r)" role="group" aria-label="control the radius of the circle our point is on">
+        <label for="r">radius</label>
+        <input id="r" type="range" min="50" max="600" value="400"/>
+        <output for="r"></output>
+    </div>
+    <div class="wrap wrap--a" style="--min: -180; --max: 180; --val: var(--a)" role="group" aria-label="control the angle of the radius to our point with respect to the horizontal axis">
+        <label for="a">angle</label>
+        <input id="a" type="range" min="-180" max="180" value="60"/>
+        <output for="a"></output>
+    </div>
+    </form>
+    <svg viewBox="-700 -700 1400 1400" style="font-size: 40px">
+    <defs>
+        <path id="arr" d="M0 0l10-20-10 6-10-6z"></path>
+    </defs>
+    <path class="axes" d="M700 0H-700M0-700V700"></path>
+    <use class="axes" xlink:href="#arr" transform="rotate(-90) translate(0 700)"></use>
+    <use class="axes" xlink:href="#arr" y="700"></use>
+    <text class="axes" x="680" y="-20">x</text>
+    <text class="axes" y="680" x="-20" text-anchor="end">y</text>
+    <line class="guide" x2="500"></line>
+    <line class="guide" y2="500"></line>
+    <line class="proj" x2="500"></line>
+    <line class="proj" y2="500"></line>
+    <g class="meas">
+        <circle class="arc" r="50" pathLength="360"></circle>
+        <use class="arr" xlink:href="#arr"></use>
+    </g>
+    <line class="rad" x2="500"></line>
+    <circle class="main"></circle>
+    <circle class="point proj point--x" r="5"></circle>
+    <circle class="point proj point--y" r="5"></circle>
+    <circle class="point rad point--x point--y" r="7.5"></circle>
+    <foreignObject class="meas" style="--val: var(--a)">
+        <output xmlns="http://www.w3.org/1999/xhtml" for="a"></output>
+    </foreignObject>
+    <foreignObject class="rad" style="--val: var(--r)">
+        <output xmlns="http://www.w3.org/1999/xhtml" for="r"></output>
+    </foreignObject>
+    <foreignObject class="cart">
+        <output xmlns="http://www.w3.org/1999/xhtml" for="r a"></output>
+    </foreignObject>
+    </svg>
+    <pre>
+    <div class="token--form">
+        <var class="token--var">x</var><span class="token--oper">=</span>
+        <var class="token--var">r</var><span class="token--oper">·</span><span class="token--func">cos</span><span class="token--punc">(</span><span class="token--arg">
+        <var class="token--var">θ</var></span><span class="token--punc">)</span><span class="token--oper">=</span>
+        <output class="token--len" for="r" style="--val: var(--r)"></output><span class="token--oper">·</span><span class="token--func">cos</span><span class="token--punc">(</span><span class="token--arg">
+        <output class="token--ang" for="a" style="--val: var(--a)"></output></span><span class="token--punc">)</span><span class="token--oper">=</span>
+        <span id="out_X">XXX</span>
+    </div>
+    <div class="token--form">
+        <var class="token--var">y</var><span class="token--oper">=</span>
+        <var class="token--var">r</var><span class="token--oper">·</span><span class="token--func">sin</span><span class="token--punc">(</span><span class="token--arg">
+        <var class="token--var">θ</var></span><span class="token--punc">)</span><span class="token--oper">=</span>
+        <output class="token--len" for="r" style="--val: var(--r)"></output><span class="token--oper">·</span><span class="token--func">sin</span><span class="token--punc">(</span><span class="token--arg">
+        <output class="token--ang" for="a" style="--val: var(--a)"></output></span><span class="token--punc">)</span><span class="token--oper">=</span>
+    
+        <span id="out_Y">YYY</span>
+    </div></pre>
+    <script>
+
+
+        class CartesianCoord
+            {
+                constructor (x, y) {
+                    this.x = x;
+                    this.y = y;
+                }
+
+                ToPolarCoord() {
+                    let p = new PolarCoord();
+                    p.r = Math.sqrt(this.x * this.x + this.y * this.y);
+                    p.theta = Math.atan2(this.y, this.x);
+                    return p;
+                }
+            }
+
+            class PolarCoord
+            {
+                // r = r of circle
+                // theta = angle in radians, measured from positive X axis
+                // thetaDegrees = angle in degrees
+                constructor (r, theta, thetaDegrees) {
+                    this.r = r;
+                    this.theta = theta;
+                    this.thetaDegrees = thetaDegrees; 
+                }
+                
+                set thetaDegrees(value) {
+                    this.theta = (value * 2 * Math.PI) / 360;
+                }    
+                get thetaDegrees() {
+                    return (this.theta * 360) / (Math.PI * 2);
+                } 
+
+                ToCartesianCoord() {
+                    let c = new CartesianCoord();
+                    c.x = this.r * Math.cos(this.theta);
+                    c.y = this.r * Math.sin(this.theta);
+                    return c;
+                }
+            }
+
+          
+
+
+
+        document.documentElement.classList.add('js');
+
+        const S = document.body.style;
+        let polar = new PolarCoord();
+        polar.thetaDegrees = 60;
+        polar.r = 400;
+
+        addEventListener('input', e => {
+            let _t = e.target,id = _t.id,val = +_t.value;
+
+            S.setProperty(`--${id}`, val);
+
+            
+            if (id === 'r') {
+                polar.r = val;
+                
+                let c = polar.ToCartesianCoord();
+                console.log(c);
+                /* S.setProperty(`--x`, c.x);
+                S.setProperty(`--y`, c.y); */
+                document.getElementById("out_Y").innerHTML = c.y.toFixed(3);
+                document.getElementById("out_X").innerHTML = c.x.toFixed(3);
+            } 
+
+            if (id === 'a') {
+                
+                polar.thetaDegrees = val;
+                
+                let c = polar.ToCartesianCoord();
+                console.log(c);
+
+                let rad = val * Math.PI / 180;
+                S.setProperty(`--cos`, +Math.cos(rad).toFixed(3));
+                S.setProperty(`--sin`, +Math.sin(rad).toFixed(3));
+
+                /* S.setProperty(`--x`, c.x);
+                S.setProperty(`--y`, c.y); */
+                document.getElementById("out_Y").innerHTML = c.y.toFixed(3);
+                document.getElementById("out_X").innerHTML = c.x.toFixed(3);
+            }
+        }, false);
+    </script>
+</body>
+</html>

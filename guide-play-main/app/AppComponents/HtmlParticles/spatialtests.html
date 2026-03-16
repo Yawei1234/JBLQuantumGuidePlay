@@ -1,0 +1,70 @@
+<!-- SPATIAL TESTS SETTINGS -->
+<div
+  class="w-full flex flex-col transition-opacity duration-300"
+  x-transition:enter="ease-out"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="ease-in"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+  x-show="$store.global.currentTab === 'SPATIAL TESTS'"
+>
+  <div class="w-full h-[600px] flex flex-col mb-4 mt-8">
+    <!-- <div class="w-full mb-6"> -->
+    <!-- <h3 class="item-title ">SPATIAL TESTS</h3> -->
+    <!-- </div> -->
+
+    <div class="w-full flex flex-1 items-center justify-center">
+      <iframe
+        id="iframe-container-polar"
+        src="comps/polarCart.html"
+        frameborder="0"
+        class="iframe-container w-full h-full"
+      ></iframe>
+    </div>
+  </div>
+
+  <div class="w-full h-[600px] bg-black flex flex-col my-8">
+    <!-- <div class="w-full mb-6"> -->
+    <!-- <h3 class="item-title ">JOY TESTS</h3> -->
+    <!-- </div> -->
+
+    <div class="w-full flex flex-1 items-center justify-center">
+      <iframe
+        id="iframe-container-joy"
+        x-data="window.iframeComponent('joy')"
+        x-init="init"
+        src="comps/joy.html"
+        frameborder="0"
+        class="iframe-container w-full h-[285px]"
+      ></iframe>
+    </div>
+    <div class="w-full h-[300px] bg-black flex flex-col my-8">
+      <div class="w-full h-full flex flex-1 items-center justify-center">
+        <iframe
+          id="iframe-container-radaremitter"
+          x-data="window.iframeComponent('radaremitter', 'joy')"
+          x-init="init"
+          @restart-comp.window="init"
+          src="comps/radaremitter.html?id=joy"
+          scrollbars="none"
+          frameborder="0"
+          class="w-full h-[270px]"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full h-[480px] bg-black flex flex-col my-8">
+    <div class="w-full flex flex-1 items-center justify-center">
+      <iframe
+        id="iframe-container-aim"
+        x-data="window.iframeComponent('aim')"
+        x-init="init"
+        src="comps/aim.html"
+        frameborder="0"
+        class="w-full h-[480px]"
+      ></iframe>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,286 @@
+"UserLocalConfigStore"
+{
+"Broadcast"
+{
+"Permissions" "0"
+"FirstTimeComplete" "1"
+"MaxKbps" "3500"
+"OutputWidth" "1920"
+"OutputHeight" "1080"
+"EncoderSetting" "0"
+"IncludeDesktop" "0"
+"RecordSystemAudio" "0"
+"RecordMic" "0"
+"ShowDebugInfo" "0"
+"ShowReminder" "0"
+"ShowChat" "0"
+}
+"streaming_v2"
+{
+"EnableStreaming" "1"
+"DefaultAudioDevice" "{0.0.0.00000000}.{9d433c70-0087-4930-8a82-825ea97ea06f}"
+"DefaultAudioDeviceName" "Altofalantes (Realtek(R) Audio)"
+"DefaultMicrophone" "{0.0.1.00000000}.{2d2d3c68-b03d-4b06-bdae-fb8af9ca5570}"
+"DefaultMicrophoneName" "Grupo de microfones (Tecnologia Intel� Smart Sound para microfones digitais)"
+"P2PScopeV2" "0"
+}
+"friends"
+{
+"1524216714"
+{
+"NameHistory"
+{
+"0" "gamingcap"
+}
+"name" "gamingcap"
+}
+"PersonaName" "gamingcap"
+"communitypreferences" "18002000280130013800"
+"contentdescriptorpreferences" "0a04080310000a0408041000"
+}
+"Offline"
+{
+"Ticket" "088ae7e6d6051509337664"
+"Signature" "75c87c34487889986a542372d6a631a11178e0786b4558d54fa4008f7b4d0418c48d8dc81545eada8d9a3e1a8cb52528cfae1ef019bb9ac5b32b0599b4f369d13fd3b10ed4d0992cf3c2ef63b1f16dfb2ca8a6263f9cce6a473d1cbba3fbedea72a7d95528b90742a0a9e6be760858e722cae3f9bfbf6d8397349d49bde9a3d8c8c31f35edd1288e1ab11662932239e9dee9bfd4f472a7241d23b730b1e6f703bdfe83379cf5a97d5d806577b5cc4277fe7bcad80e0908335facff2e094ce6f8105475b3fb5f0f63c9e35866011b7382794c455c5f48ec760f097733e54622d0d7ad9d3787c0294515549787f79038496bcf957fb6182073f7ee8b5369fda388"
+"EncryptedTicket" "0a20c4a2e2d8e06bb46a93f2df53ad54663815f3c729b3ce31542a401d2a9df9831f12800275c87c34487889986a542372d6a631a11178e0786b4558d54fa4008f7b4d0418c48d8dc81545eada8d9a3e1a8cb52528cfae1ef019bb9ac5b32b0599b4f369d13fd3b10ed4d0992cf3c2ef63b1f16dfb2ca8a6263f9cce6a473d1cbba3fbedea72a7d95528b90742a0a9e6be760858e722cae3f9bfbf6d8397349d49bde9a3d8c8c31f35edd1288e1ab11662932239e9dee9bfd4f472a7241d23b730b1e6f703bdfe83379cf5a97d5d806577b5cc4277fe7bcad80e0908335facff2e094ce6f8105475b3fb5f0f63c9e35866011b7382794c455c5f48ec760f097733e54622d0d7ad9d3787c0294515549787f79038496bcf957fb6182073f7ee8b5369fda38818062208995c007185f8eccb28043208dfad192857d34520"
+"EncryptedSignature" "75c87c34487889986a542372d6a631a11178e0786b4558d54fa4008f7b4d0418c48d8dc81545eada8d9a3e1a8cb52528cfae1ef019bb9ac5b32b0599b4f369d13fd3b10ed4d0992cf3c2ef63b1f16dfb2ca8a6263f9cce6a473d1cbba3fbedea72a7d95528b90742a0a9e6be760858e722cae3f9bfbf6d8397349d49bde9a3d8c8c31f35edd1288e1ab11662932239e9dee9bfd4f472a7241d23b730b1e6f703bdfe83379cf5a97d5d806577b5cc4277fe7bcad80e0908335facff2e094ce6f8105475b3fb5f0f63c9e35866011b7382794c455c5f48ec760f097733e54622d0d7ad9d3787c0294515549787f79038496bcf957fb6182073f7ee8b5369fda388"
+}
+"apptickets"
+{
+"7" "32000000040000008ab3d95a0100100107000000962c8db18b44a8c0000000000933766489e2916401000000000000000000ca293ed59d63b60c65a471b6cd930984e324b6f4f9cccd8854b34b5047a295325def3590691e19159442be1bec52c12a5f2d6a9ee210bcb42fcfb8da86055384ad7171789c34e2e2c975ca45290c0a4585c0354c2aadaae178587866045e97a2aab768aec8eee4e82264fadddc9aa23b164772bd260e912d3cf165d7cbb493d4"
+"730" "32000000040000008ab3d95a01001001da020000962c8db18b44a8c0000000000a3376648ae2916401001aa10400000000007f11990f4c30ee219bb1abe7cba6f3a31138e60866fb0868893b9b1f3408a254173de8c2b8c08208ce702398553366999feed0dc70c1ee8c3176ce3c23e3f222211865fdad65cfc6d7969f7417290be27a7b81142161c765e18a34d2e34c0cc4b335739a73c6ba97e4bb3c34dfd16846da3d48cef7d8b77f31ff746f741a1b90"
+"228980" "32000000040000008ab3d95a01001001747e0300962c8db18b44a8c0000000000a3376648ae29164010000000000000000001ac64d1da59d44379f577d84894470f57c4d1b95f5e60f6da96863b5b2ec55ce0cbd8704f404d5cac3d2176f46faf24ff6ec9bce390af8aca095edfd78c18088c403752baf9c017b6777c11402bf02b33b1110da40945e50c5694000dbe351b315669689e5d430b74e9922eb85162fe14fc17434ae602ef628c3fd6b496036ce"
+"310950" "32000000040000008ab3d95a01001001a6be0400962c8db18b44a8c0000000000a3376648ae291640100983f0400000000004c96139c09a513e59afaf97b5e3fbdfe77221bbec684146cb3d28a2d969354c7fcb51115677567e12b030c1158109ad71f2dec4d56ce6f2786d28955622ea268b293b6ad4f0ba1cbb6c5db124107d830048b426478f284d139c5c10c50121d29b196862319b70bd131e9d4f451eabf7807ab8b33d0521170b4f2c80ecfbbc291"
+}
+"SharedAuth"
+{
+"id" "856496884"
+"AuthData" "1c660dcf1f8067913b4a915c98211839a62ef65c9c7ab981502def0816b87d61"
+}
+"ParentalSettings"
+{
+"settings" "098ab3d95a000000004800"
+"Signature" "1dc0b1057d7f420fd9242d47fbe6a174f4a4605defc2aac1765d6907b1043d8f6329713c97b083d903080b45460e98bb1a8cb41e137c6d307daea1b7b9c6034ccd42fdc0d48f213df1b5ee86026cd0dbcf1eeffa3182fcb76ecdc0380e645b9c9cc7f07a11b9b1e3b3f832a1529466015dcb2d7e5e1dc26eeb06b8d8a090c8d6fc976bb973661ea0e8f74a68cf4cc6bd153ac69df3779936587bde233452f00539c4e39403ff43ffa4e70ef39e77d911f3b2faf33fc131d022ec2f0b06b0796927d8082678d974a56d94d63bbaab864448ac7dfc412b47c930e7ddaf5c930d83e80491a1451fb71ba83ee049454b760f4476f3e0e9c4238e52f872990aefd9c2"
+}
+"AppInfoChangeNumber" "18984629"
+"Software"
+{
+"Valve"
+{
+"Steam"
+{
+"apps"
+{
+"7"
+{
+"cloud"
+{
+"last_sync_state" "synchronized"
+}
+}
+"760"
+{
+"cloud"
+{
+"quota_bytes" "20000000000"
+"quota_files" "50000"
+"used_bytes" "0"
+"used_files" "0"
+}
+}
+"730"
+{
+"LastPlayed" "1682023997"
+"cloud"
+{
+"last_sync_state" "synchronized"
+}
+"autocloud"
+{
+"lastlaunch" "1682022463"
+"lastexit" "1682023997"
+}
+"BadgeData" "020000000800"
+"DisableUpdatesUntil" "0"
+"Playtime2wks" "55"
+"playTime" "418"
+"LaunchOptions" "+exec autoexec.cfg -novid -nojoy -language english -fullscreen -w 1920 -h 1080 -noaafonts -noforcemaccel -noforcemspd -noforcemparms -nojoystick -nocrashdialog -nohltv -softparticlesdefaultoff +r_drawparticles 0"
+}
+"310950"
+{
+"LastPlayed" "1680816713"
+"cloud"
+{
+"last_sync_state" "synchronized"
+}
+"autocloud"
+{
+"lastlaunch" "1680794430"
+"lastexit" "1680816767"
+}
+"BadgeData" "020000000800"
+"Playtime2wks" "72"
+"playTime" "415"
+}
+"241100"
+{
+"cloud"
+{
+"last_sync_state" "synchronized"
+}
+"autocloud"
+{
+"lastlaunch" "1680815050"
+"lastexit" "1680816765"
+}
+}
+}
+"LastPlayedTimesSyncTime" "1682023997"
+"PlayerLevel" "0"
+"SmallMode" "0"
+}
+}
+}
+"WebStorage"
+{
+"CachedCommunityPreferences" "{\\"
+"CachedStorePreferences" "{\\"
+"UIStoreLocalState" "{\\"
+"keyboard_haptic_preset" "2"
+"keyboard_haptic_custom" "{\\"
+"keyboard_trackpad_typing_scale" "1"
+"keyboard_trackpding_typing_trigger_as_click" "true"
+"keyboard_layout" "{\\"
+"keyboard_initial_location_desktop" "\\"
+"keyboard_initial_location_overlay" "\\"
+"user-collections" "{}"
+"trendingstore_storage" "{\\"
+"playnextstore_storage" "{\\"
+"SteamVoiceSettings_1524216714" "{\\"
+"CTextFilterStore_TextFilterPreferences" "{\\"
+"CTextFilterStore_TextFilterWords" "{\\"
+"CTextFilterStore_strBannedPattern" "\\"
+"CTextFilterStore_strCleanPattern" "\\"
+"UIDisplayPrefs_1524216714" "{\\"
+"ChatStorePopupState_1524216714" "{\\"
+"FriendStoreLocalPrefs_1524216714" "{\\"
+"TimesSeenStatusChangeCallout" "1"
+}
+"system"
+{
+"PushToTalkKey" "0"
+"EnableGameOverlay" "1"
+"EnableSCTenFootOverlayCheckNew" "0"
+"DisableLaunchInVR" "0"
+"InGameOverlayShortcutKey" "Shift\tKEY_TAB"
+"InGameOverlayScreenshotNotification" "1"
+"InGameOverlayScreenshotPlaySound" "1"
+"InGameOverlayScreenshotSaveUncompressed" "0"
+"InGameOverlayShowFPSContrast" "0"
+"InGameOverlayShowFPSCorner" "0"
+"InGameOverlayScreenshotHotKey" "KEY_F12"
+"NetworkingAllowShareIP" "0"
+"NavUrlBar" "0"
+"displayratesasbits" "0"
+"GameOverlayHomePage" "http://www.google.com"
+}
+"CloudKey" "01000000227cb0f0565652c7b8b6d7f9c4910d28e7129be1341135a2f486312201cb2af134ada129"
+"CloudKeyCRC" "-12569093"
+"LastInstallFolderIndex" "0"
+"UserAppConfig"
+{
+"730" "00696e7465726e616c00016c616e6775616765006272617a696c69616e000808"
+"228980" "0055736572436f6e6669670001426574614b6579007075626c6963000808"
+"310950" "00696e7465726e616c00016c616e6775616765006272617a696c69616e000808"
+}
+"CloudManager"
+{
+}
+"RecentLocalPlayedGameIDs" "da020000000000003da641640000499fa6be0400000000003ee32e6400000000"
+"depots"
+{
+"228988"
+{
+"CDN"
+{
+"steampipe.akamaized.net"
+{
+"token" ""
+"Expires" "1678243699"
+}
+}
+}
+"228990"
+{
+"CDN"
+{
+"steampipe.akamaized.net"
+{
+"token" ""
+"Expires" "1678243701"
+}
+}
+}
+"732"
+{
+"CDN"
+{
+"steampipe.akamaized.net"
+{
+"token" ""
+"Expires" "1678243704"
+}
+}
+}
+"731"
+{
+"CDN"
+{
+"steampipe.akamaized.net"
+{
+"token" ""
+"Expires" "1678243709"
+}
+}
+}
+"310951"
+{
+"CDN"
+{
+"level3.cdn.steampipe.steamcontent.com"
+{
+"token" ""
+"Expires" "1678313825"
+}
+}
+}
+"228985"
+{
+"CDN"
+{
+"level3.cdn.steampipe.steamcontent.com"
+{
+"token" ""
+"Expires" "1678313826"
+}
+}
+}
+}
+"nettickets"
+{
+"730" "010000001d2381f58fefe978e0e40bab26959918ef58830400d59f5c07986b40c267c3f0d0d2310eb46da575e9582369d12cfe499fae8c2a3401db1470c55c2830320e7b481b7f0ca562132113d9514dc2f6df5ab49adcec14e3ca6da18cb49301c58ff4ae93c3c887953b4c9dbd7d186187d445b027313e3c8de276a99af57577af0c45a4509943d136f3f56f2759a3848c4f56751ddc380f1ba0ec4129ceeff861696306691aaf085d0b7bf4b6afef527ec03ccc6426b700c0a3e8467415d69c5475653f18ce967aff8d31f027ca42479dcb3bfd7c7f31ac149f582eccc8b61d362871fa7b8d913a447926d252a261e897441192fd0a9455261b"
+}
+"HideSharingNotifications" "0"
+"News"
+{
+"NotifyAvailableGames" "1"
+}
+"LibraryDisplaySize" "0"
+"LibraryLowBandwidthMode" "0"
+"LibraryLowPerfMode" "0"
+"LibraryDisableCommunityContent" "0"
+"LibraryDisplayIconInGameList" "1"
+"SteamController_DisableTwoFootNotifications" "0"
+"DualSense_DisableUpdateNotifications" "0"
+"StartupState.Friends" "0"
+}

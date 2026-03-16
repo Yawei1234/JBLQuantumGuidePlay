@@ -1,0 +1,1 @@
++exec autoexec.cfg -novid -nojoy -language english -fullscreen -w 1920 -h 1080 -noaafonts -noforcemaccel -noforcemspd -noforcemparms -nojoystick -nocrashdialog -nohltv -softparticlesdefaultoff +r_drawparticles 0

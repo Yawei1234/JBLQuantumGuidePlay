@@ -1,0 +1,908 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AIM test</title>
+    <style>
+      body {
+        background-color: #2f3e53;
+        margin: 0px;
+        padding: 0px;
+      }
+      .slide {
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .item {
+        display: inline-block;
+        height: 310px;
+        width: 400px;
+        transform: translateX(50%);
+      }
+      .bg-thumbs {
+        background: rgb(0, 0, 255);
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 255, 1) 0%,
+          rgba(22, 255, 249, 1) 14%,
+          rgba(108, 219, 130, 1) 28%,
+          rgba(255, 192, 0, 1) 42%,
+          rgba(255, 22, 22, 1) 50%,
+          rgba(255, 192, 0, 1) 58%,
+          rgba(108, 219, 130, 1) 72%,
+          rgba(22, 255, 249, 1) 86%,
+          rgba(0, 0, 255, 1) 100%
+        );
+      }
+
+      .indicator {
+        margin: 0 auto;
+        display: flex;
+      }
+      .doc {
+        width: 3px;
+        height: 30px;
+        background-color: #ff0000;
+        margin: 20px;
+        border: 1px solid #860000;
+        transition: 0.3s;
+      }
+      .doc.hover {
+        transform: scaleY(3);
+      }
+
+      #el:before {
+        background: #26262670;
+        border-radius: 200px 200px 0 0;
+        box-shadow: 3px 1px 8px rgba(0, 0, 0, 0.15) inset;
+        content: "";
+        height: 100px;
+        position: absolute;
+        width: 200px;
+      }
+
+      #el {
+        border-radius: 200px 200px 0 0;
+        height: 100px;
+        overflow: hidden;
+        position: relative;
+        width: 200px;
+      }
+
+      #el:after {
+        background: #ffffff;
+        border-radius: 140px 140px 0 0;
+        bottom: 0;
+        box-shadow: 3px 1px 8px rgba(0, 0, 0, 0.15);
+        color: rgba(255, 0, 0, 0.7);
+        content: attr(data-value);
+        font-family: Lato, Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 20px;
+        font-weight: 100;
+        height: 70px;
+        left: 30px;
+        line-height: 95px;
+        position: absolute;
+        text-align: center;
+        width: 140px;
+        z-index: 3;
+      }
+
+      #needle {
+        border-radius: 4px;
+        bottom: -4px;
+        box-shadow: 3px -1px 4px rgba(0, 0, 0, 0.4);
+        display: block;
+        height: 8px;
+        left: 10px;
+        position: absolute;
+        width: 90px;
+        transform-origin: 100% 4px;
+        transform: rotate(0deg);
+        transition-property: rotate transform;
+        transition-duration: 0.7s;
+        transition-timing-function: ease-out;
+      }
+      #needle_color {
+        background: rgba(21, 255, 0, 0.7);
+        border-radius: inherit;
+      }
+
+      /* #el:hover span {
+            transform: rotate(180deg);
+            } */
+
+      h1,
+      p,
+      strong {
+        display: block;
+        font-family: Lato;
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 0.4em;
+      }
+
+      p {
+        margin-top: 0;
+      }
+
+      strong {
+        color: #efefef;
+        font-size: 2.5em;
+      }
+      .font-mono {
+        font-family: monospace;
+        color: #8a8a8a;
+      }
+    </style>
+    <script src="../js/webcomponents-bundle.js"></script>
+    <script src="../js/tailwind.js"></script>
+    <script src="../js/Tone.js"></script>
+    <script src="../js/tone-ui.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/radarFunctions.js"></script>
+    <script src="../js/postme.js"></script>
+    <script src="../js/joystick-controller.min.js"></script>
+  </head>
+  <body>
+    <script>
+      JoystickController = JoystickController.default;
+    </script>
+    <div
+      class="select-none w-full h-full bg-gray-800 flex flex-col items-center justify-center"
+    >
+      <div
+        style="height: 55px; background: #181818; margin-top: 4px"
+        class="w-[250px] p-4 relative overflow-hidden rounded"
+      >
+        <div style="transform: translateX(50%)" class="w-full relative">
+          <div
+            id="blinkTarget"
+            style="margin-left: -13px"
+            class="absolute w-6 h-6 bg-red-700 rounded-full z-10"
+          ></div>
+        </div>
+      </div>
+      <div class="w-full flex flex-col">
+        <div
+          id="txt-maxRadiusRange"
+          class="w-full text-xs font-mono text-white"
+        >
+          maxRadiusRange
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="320"
+          value="1"
+          step="1"
+          id="maxRadiusRange"
+        />
+        <div id="txt-dividerRange" class="w-full text-xs font-mono text-white">
+          dividerRange
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="640"
+          value="1"
+          step="1"
+          id="dividerRange"
+        />
+        <div
+          id="txt-multiplierRange"
+          class="w-full text-xs font-mono text-white"
+        >
+          multiplierRange
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="320"
+          value="1"
+          step="1"
+          id="multiplierRange"
+        />
+        <div id="txt-maxBPMRange" class="w-full text-xs font-mono text-white">
+          maxBPMRange
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="320"
+          value="1"
+          step="1"
+          id="maxBPMRange"
+        />
+        <!-- JOYS -->
+        <div id="txt-JoyMaxRadius" class="w-full text-xs font-mono text-white">
+          JoyMaxRadius
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="320"
+          value="1"
+          step="1"
+          id="JoyMaxRadius"
+        />
+        <div id="txt-JoyMultiplier" class="w-full text-xs font-mono text-white">
+          JoyMultiplier
+        </div>
+        <input
+          type="range"
+          min="1"
+          max="320"
+          value="1"
+          step="1"
+          id="JoyMultiplier"
+        />
+      </div>
+      <div
+        class="select-none w-full mt-4 flex-1 overflow-hidden overflow-y-auto font-mono text-xs text-white"
+        id="logRaw"
+      ></div>
+    </div>
+    <script type="text/javascript">
+      const queryString = window.location.search;
+      const urlParams = new URLSearchParams(queryString);
+      const trackerID = urlParams.get("id");
+      const devModeParam = urlParams.get("devMode");
+      const isDevMode = devModeParam ? devModeParam == "true" : false;
+      const maxRadiusParam = urlParams.get("maxRadius")
+        ? parseInt(urlParams.get("maxRadius"))
+        : 250;
+      const dividerParam = urlParams.get("divider")
+        ? parseInt(urlParams.get("divider"))
+        : 300;
+      const maxBPMParam = urlParams.get("maxBPM")
+        ? parseInt(urlParams.get("maxBPM"))
+        : 180;
+      const globalMultiplierParam = urlParams.get("globalMultiplier")
+        ? parseInt(urlParams.get("globalMultiplier"))
+        : 100;
+
+      const ParentHandshake = PostMe.ParentHandshake;
+      const ChildHandshake = PostMe.ChildHandshake;
+
+      // For safety it is strongly adviced to pass the explicit child origin instead of '*'
+      const messenger = new PostMe.WindowMessenger({
+        localWindow: window,
+        remoteWindow: window.parent,
+        remoteOrigin: "*",
+      });
+
+      window.connected = null;
+      window.remoteHandle = null;
+      window.localHandle = null;
+
+      window.JoyMaxRadius = 100;
+      window.JoyMultiplier = 1;
+
+      window.showLog = (e, ...args) => {
+        // console.log(e, ...args);
+        if (window.remoteHandle) {
+          window.remoteHandle
+            .call(
+              "emitLog",
+              JSON.stringify({
+                trackerID,
+                ...args,
+              })
+            )
+            .then((result) => {
+              // alert("emitLog___"+result);
+              console.info("emitLog___" + result);
+            })
+            .catch((err) => {
+              // alert("emitLog___err"+err);
+              console.info("emitLog___err", err);
+            });
+        }
+      };
+
+      window.aimState = {
+        silence: 0,
+        angle: 0,
+        x: 0,
+        y: 0,
+        dist: 0,
+        multiplier: 10.5,
+        stopped: false,
+        buffer: null,
+        volume: 0,
+        player: null,
+        panner: null,
+        loop: null,
+      };
+
+      window.divider = dividerParam;
+      window.maxRadius = maxRadiusParam;
+      window.globalMultipliterValue = globalMultiplierParam;
+      window.maxBPM = maxBPMParam;
+      window.globalBPM = maxBPM;
+
+      const blinkTarget = document.getElementById("blinkTarget");
+      const logRaw = document.getElementById("logRaw");
+
+      const JoyMaxRadius = document.getElementById("JoyMaxRadius");
+      const txtJoyMaxRadius = document.getElementById("txt-JoyMaxRadius");
+
+      JoyMaxRadius.addEventListener("input", function (evt) {
+        window.JoyMaxRadius = parseInt(evt.target.value);
+        txtJoyMaxRadius.innerHTML = `JoyMaxRadius: ${window.JoyMaxRadius}`;
+        window.showLog("JoyMaxRadius", evt.target.value);
+      });
+
+      const JoyMultiplier = document.getElementById("JoyMultiplier");
+      const txtJoyMultiplier = document.getElementById("txt-JoyMultiplier");
+
+      JoyMultiplier.addEventListener("input", function (evt) {
+        window.JoyMultiplier = parseInt(evt.target.value);
+        txtJoyMultiplier.innerHTML = `JoyMultiplier: ${window.JoyMultiplier}`;
+        window.showLog("JoyMultiplier", evt.target.value);
+      });
+
+      // if (!isDevMode) {
+      JoyMaxRadius.style.display = "none";
+      txtJoyMaxRadius.style.display = "none";
+      JoyMultiplier.style.display = "none";
+      txtJoyMultiplier.style.display = "none";
+      // }
+
+      const maxBPMRange = document.getElementById("maxBPMRange");
+      const maxBPMSpan = document.getElementById("txt-maxBPMRange");
+
+      // if isDevMode hide
+      if (!isDevMode) {
+        maxBPMRange.style.display = "none";
+        maxBPMSpan.style.display = "none";
+      }
+
+      maxBPMRange.addEventListener("input", function (evt) {
+        window.maxBPM = parseInt(evt.target.value);
+        maxBPMSpan.innerHTML = `maxBPM: ${window.maxBPM}`;
+        window.showLog("maxBPMRange", evt.target.value);
+      });
+
+      const multiplierRange = document.getElementById("multiplierRange");
+      const multiplierSpan = document.getElementById("txt-multiplierRange");
+
+      if (!isDevMode) {
+        multiplierRange.style.display = "none";
+        multiplierSpan.style.display = "none";
+      }
+
+      multiplierRange.addEventListener("input", function (evt) {
+        window.globalMultipliterValue = parseInt(evt.target.value);
+        multiplierSpan.innerHTML = `globalMultipliterValue: ${window.globalMultipliterValue}`;
+        window.showLog("multiplierRange", evt.target.value);
+      });
+
+      const dividerRange = document.getElementById("dividerRange");
+      const dividerSpan = document.getElementById("txt-dividerRange");
+
+      if (!isDevMode) {
+        dividerRange.style.display = "none";
+        dividerSpan.style.display = "none";
+      }
+
+      dividerRange.addEventListener("input", function (evt) {
+        window.divider = parseInt(evt.target.value);
+        dividerSpan.innerHTML = `divider: ${window.divider}`;
+        window.showLog("dividerRange", evt.target.value);
+      });
+
+      const maxRadiusRange = document.getElementById("maxRadiusRange");
+      const maxRadiusSpan = document.getElementById("txt-maxRadiusRange");
+
+      if (!isDevMode) {
+        maxRadiusRange.style.display = "none";
+        maxRadiusSpan.style.display = "none";
+      }
+
+      maxRadiusRange.addEventListener("input", function (evt) {
+        window.maxRadius = parseInt(evt.target.value);
+        maxRadiusSpan.innerHTML = `maxRadius: ${window.maxRadius}`;
+        window.showLog("maxRadiusRange", evt.target.value);
+      });
+
+      window.radarState = [];
+      window.trackeds = [];
+
+      class EntitiePoint {
+        constructor(
+          x,
+          y,
+          px,
+          py,
+          dist,
+          angle,
+          angleP,
+          angleRoot,
+          silence,
+          className = "enemy",
+          id = String(new Date().getTime())
+        ) {
+          this.x = x;
+          this.y = y;
+          this.px = px;
+          this.py = py;
+          this.dist = dist;
+          this.angle = angle;
+          this.angleP = angleP;
+          this.angleRoot = angleRoot;
+          this.silence = silence;
+          this.className = className;
+          this.id = id;
+        }
+
+        distance(a, b) {
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
+
+          return Math.hypot(dx, dy);
+        }
+      }
+
+      const refreshComp = () => {
+        window.showLog("AIM_EMITTER: refresh");
+        const refKey = `aim-${trackerID}`;
+        window.remoteHandle.call("restart", refKey).then((result) => {
+          // alert("AIM_EMITTER: restart");
+          window.showLog("AIM_EMITTER: restart", result);
+        });
+        setTimeout(() => {
+          window.location.reload(true);
+        }, 500);
+      };
+
+      const createEntitiePoints = () => {
+        if (window.radarState.length == 0) return [];
+        const entitiePoints = window.radarState.map((e) => {
+          // this.x = x;
+          // this.y = y;
+          // this.px = px;
+          // this.py = py;
+          // this.dist = dist;
+          // this.angle = angle;
+          // this.angleP = angleP;
+          // this.angleRoot = angleRoot;
+          // this.silence = silence;
+          // this.className = className;
+          const entitiePoint = new EntitiePoint(
+            e.x,
+            e.y,
+            e.px,
+            e.py,
+            e.dist,
+            e.angle,
+            e.angleP,
+            e.angleRoot,
+            e.silence,
+            e.className || e.class || "enemy",
+            e.id
+          );
+          return entitiePoint;
+        });
+        return entitiePoints;
+      };
+
+      const blinkLocal = (blinkTarget) => {
+        blinkTarget.style.opacity = 1;
+        setTimeout(() => {
+          blinkTarget.style.opacity = 0;
+        }, 10);
+      };
+
+      const plotEntities = () => {
+        window.trackeds.forEach((e) => {
+          window.showLog("AIM_ENTITIES_POINTS_TRACKEDS_PLOT", e);
+          const entitie = e;
+          if (!entitie) return;
+          const newDist = entitie.dist * window.aimState.multiplier;
+          const x = (newDist / window.maxRadius) * 100;
+          const y = (e.py / window.maxRadius) * 100;
+          // invert y
+          const ny = y * -1;
+
+          //   blinkTarget.style.opacity = 0.1;
+
+          blinkTarget.style.left = `${Math.round(x * -1)}px`;
+          //   blinkTarget.style.top = `${Math.round(ny)}px`;
+
+          // append logRaw
+          logRaw.innerHTML =
+            `_bpm_${window.globalBPM.toFixed(2)}_px_${e.px.toFixed(
+              2
+            )}_py_${e.py.toFixed(2)}_d_${e.dist.toFixed(2)}_a_${e.angle}_aR_${
+              e.angleRoot || "*"
+            }_m_${window.aimState.multiplier}` + "<br>";
+        });
+      };
+
+      const setSpatial = (panner, nx = null, ny = null, nz = null) => {
+        const newValues = {
+          x: nx ? parseFloat(nx) : panner.get().positionX,
+          y: ny ? parseFloat(ny) : panner.get().positionY,
+          z: nz ? parseFloat(nz) : panner.get().positionZ,
+        };
+
+        panner.setPosition(newValues.x, newValues.y, newValues.z);
+      };
+
+      const setBPMSpeed = (silence) => {
+        const minBPM = 30;
+        const newValue =
+          window.maxBPM - silence * window.globalMultipliterValue;
+        Tone.Transport.bpm.value = newValue > minBPM ? newValue : minBPM;
+        window.globalBPM = Tone.Transport.bpm.value;
+      };
+
+      const init = async (wav, vol) => {
+        Tone.context.updateInterval = 0.005;
+        Tone.Transport.bpm.value = 360;
+
+        setTimeout(() => {
+          window.trackeds = createEntitiePoints();
+          Tone.Transport.start();
+        }, 1000);
+
+        window.showLog("STARTING AIM-EMITTER", wav);
+
+        window.aimState.wav = wav;
+        window.aimState.volume = vol;
+        if (window.aimState.buffer == null) {
+          window.aimState.buffer = await Tone.ToneAudioBuffer.fromUrl(
+            `/sounds/${window.aimState.wav}`
+          );
+        } else {
+          window.aimState.buffer.load(`/sounds/${window.aimState.wav}`);
+        }
+
+        if (window.aimState.panner == null) {
+          window.aimState.panner = new Tone.Panner3D({
+            panningModel: "HRTF",
+            positionX: 0,
+            positionY: 0,
+            positionZ: 0,
+          }).toDestination();
+        }
+        if (window.aimState.stereoChannel == null) {
+          window.aimState.stereoChannel = new Tone.Channel({
+            pan: 0,
+          }).toDestination();
+        }
+
+        if (window.aimState.playerStereo == null) {
+          window.aimState.playerStereo = new Tone.Player({
+            url: `/sounds/${window.aimState.wav}`,
+            loop: false,
+          })
+            .connect(window.aimState.stereoChannel)
+            .sync();
+          // convert percent 0-100 to debibel
+          const volume = Tone.gainToDb(
+            parseFloat(window.aimState.volume * 0.01)
+          );
+          window.aimState.playerStereo.volume.value = volume;
+        } else {
+          // update playerStereo
+          window.aimState.playerStereo.load(`/sounds/${window.aimState.wav}`);
+          const volume = Tone.gainToDb(
+            parseFloat(window.aimState.volume * 0.01)
+          );
+          window.aimState.playerStereo.volume.value = volume;
+        }
+
+        if (window.aimState.player == null) {
+          window.aimState.player = new Tone.Player({
+            url: `/sounds/${window.aimState.wav}`,
+            loop: false,
+          })
+            .connect(window.aimState.panner)
+            .sync();
+          // convert percent 0-100 to debibel
+          const volume = Tone.gainToDb(
+            parseFloat(window.aimState.volume * 0.01)
+          );
+          window.aimState.player.volume.value = volume;
+        } else {
+          // update player
+          window.aimState.player.load(`/sounds/${window.aimState.wav}`);
+          const volume = Tone.gainToDb(
+            parseFloat(window.aimState.volume * 0.01)
+          );
+          window.aimState.player.volume.value = volume;
+        }
+
+        if (window.aimState.loop == null) {
+          window.aimState.loop = new Tone.Loop(function (time) {
+            // window.showLog("AIM_TONE_LOOP_0", time, window.trackeds);
+
+            if (window.trackeds.length == 0) return;
+
+            // find the shortest dist
+            const entitiePoint = window.trackeds[0];
+
+            // window.showLog("AIM_TONE_LOOP_02", time, entitiePoint);
+
+            if (!entitiePoint) return;
+
+            window.showLog("AIM_TONE_LOOP_03", time, entitiePoint);
+
+            let pointX = entitiePoint.px / window.divider;
+            let pointY = entitiePoint.py / window.divider;
+            let newDist = Math.abs(
+              entitiePoint.dist * window.aimState.multiplier
+            );
+
+            Tone.Draw.schedule(() => {
+              blinkLocal(blinkTarget);
+
+              let x = ((pointX * window.divider) / window.maxRadius) * 100;
+              let y = ((pointY * window.divider) / window.maxRadius) * 100;
+
+              //
+              // invert y
+              y = y * -1;
+
+              blinkTarget.style.backgroundColor = heatMapColorforValue(
+                1 - newDist / window.maxRadius
+              );
+
+              //   blinkTarget.style.left = `${Math.round(x)}px`;
+              // blinkTarget.style.top = `${Math.round(y)}px`;
+            }, time);
+
+            setBPMSpeed(newDist / window.maxRadius);
+            setSpatial(window.aimState.panner, pointX, 0, 0);
+
+            // remove from window.trackeds
+            // setTimeout(() => {
+            //   window.trackeds = window.trackeds.filter(
+            //     (e) => e.id != entitiePoint.id
+            //   );
+            // }, 1000);
+
+            // if player ended, restart
+            let mutx = pointX * 100;
+            console.log("pointX", pointX, mutx);
+            if (mutx < 1 && mutx > -1) {
+              if (window.aimState.playerStereo.state == "stopped") {
+                // window.aimState.player.stop(0);
+                window.aimState.playerStereo.start(0);
+              } else {
+                window.aimState.playerStereo.restart(time);
+              }
+            } else {
+              if (window.aimState.player.state == "stopped") {
+                // window.aimState.playerStereo.stop(0);
+                window.aimState.player.start(0);
+              } else {
+                window.aimState.player.restart(time);
+              }
+            }
+            /* */
+          }, "12n");
+
+          window.aimState.loop.start(0);
+        }
+      };
+
+      const clearTrackeds = () => {
+        window.radarState = [];
+        window.trackeds = [];
+      };
+
+      let clearTrackedsTimeout = null;
+
+      const model = {
+        updateAimEmitter: function (e) {
+          const parse = JSON.parse(e);
+          console.log("AIM_EMITTER_TRACKEDS_: updateAimEmitter", parse);
+
+          // append parse
+          // window.radarState.push(parse);
+          window.radarState = parse;
+          //   slice max 5
+          window.radarState = window.radarState.slice(0, 3);
+          window.trackeds = createEntitiePoints();
+
+          plotEntities();
+          clearTimeout(clearTrackedsTimeout);
+          clearTrackedsTimeout = setTimeout(() => {
+            clearTrackeds();
+          }, 1000);
+          // window.showLog("ENTITIES_POINTS_TRACKEDS", window.trackeds)
+        },
+        setDataModel: function (e) {
+          // window.showLog("AIM_EMITTER: setDataModel", e);
+          parseDataModel(e, init);
+        },
+        refresh: refreshComp,
+      };
+
+      PostMe.ChildHandshake(messenger, model).then((connection) => {
+        // connection is an instance of Connection
+        window.connected = connection;
+        // window.showLog('Child: Handshake complete', connection);
+
+        window.remoteHandle = connection.remoteHandle();
+        window.localHandle = connection.localHandle();
+
+        // countSpan.innerHTML = count.toString();
+        window.remoteHandle.addEventListener("ping", function () {
+          //   alert("Child: Received ping event");
+          // window.showLog('Child: Received ping event');
+        });
+
+        setTimeout(() => {
+          getDataModel(init);
+        }, 1000);
+      });
+
+      const parseDataModel = async (e, callback = null) => {
+        const parse = JSON.parse(e);
+        window.dataModel = parse;
+
+        if (window.dataModel.length == 0) {
+          window.showLog("AIM_EMITTER: parseDataModel", "NO_DATA_MODEL");
+          // retry in 1 second
+          setTimeout(() => {
+            window.showLog(
+              "AIM_EMITTER: parseDataModel",
+              "RETRYING_IN_1_SECOND"
+            );
+            getDataModel(init);
+          }, 1000);
+          return;
+        }
+
+        window.showLog("AIM_EMITTER: parseDataModel", parse, e);
+        // return;
+
+        const AimAlerts = window.dataModel.find((e) => e.id == "AimAlerts");
+        if (!AimAlerts) return;
+        const AimAlertsWAV = AimAlerts.subitems.find(
+          (e) => e.id == "SfxSelect"
+        );
+        if (!AimAlertsWAV) return;
+
+        const AimAlertsVOL = AimAlerts.subitems.find(
+          (e) => e.id == "SfxVolume"
+        );
+
+        if (!AimAlertsVOL) return;
+
+        if (callback) {
+          callback(AimAlertsWAV.value, AimAlertsVOL.value);
+        }
+      };
+
+      const getDataModel = (callback) => {
+        if (!window.connected) return;
+
+        window.remoteHandle.call("getDataModel", "AimAlerts").then((result) => {
+          parseDataModel(result, callback);
+        });
+      };
+
+      const setAIMSTATE = () => {
+        if (!window.connected) return;
+
+        let stateSTR = JSON.stringify(window.aimState);
+        window.remoteHandle.call("setAimState", stateSTR);
+      };
+
+      window.mouseClicked = false;
+      document.addEventListener("mousedown", function (e) {
+        window.mouseClicked = true;
+      });
+
+      const leftJoystick = new JoystickController(
+        {
+          x: "50%",
+          y: "63%",
+          opacity: 0.1,
+          maxRange: 100,
+          radius: 60,
+          joystickRadius: 40,
+          joystickClass: "joystick",
+          distortion: false,
+          mouseClickButton: "ALL",
+          hideContextMenu: true,
+        },
+        (data) => {
+          let positions = {
+            x: data.x * window.JoyMultiplier,
+            y: data.y * window.JoyMultiplier,
+          };
+
+          /* MODEL
+          
+          [
+            {
+              "id": 1,
+              "position": [80, 200],
+              "px": 80,
+              "py": 200,
+              "x": 196,
+              "y": 120,
+              "angle": 110,
+              "angleP": 20,
+              "angleRoot": 360,
+              "dist": 20,
+              "emissionDist": 59,
+              "silence": 0.5916666666666667
+            }
+          ]
+  
+          */
+
+          const maxDist = window.JoyMaxRadius;
+          // xLeveled.innerHTML = data.leveledX;
+          // yLeveled.innerHTML = data.leveledY;
+          let distanceSQR = Math.sqrt(
+            Math.pow(positions.x, 2) + Math.pow(positions.y, 2)
+          );
+          let angle = data.angle;
+          let silence = 0.1 + parseFloat(data.distance) / maxDist;
+
+          let distFromZeroReal = 0;
+
+          if (positions.x < 0) {
+            distFromZeroReal = distanceSQR;
+          } else {
+            distFromZeroReal = -distanceSQR;
+          }
+
+          // window.joystickHandlers.leftJoystickHandler.x = data.leveledX
+          // window.joystickHandlers.leftJoystickHandler.y = data.leveledY
+
+          const fakeInput = {
+            name: trackerID,
+            id: new Date().getTime(),
+            class: trackerID,
+            positions: [positions.x, positions.y],
+            angle: 0,
+            angleP: 0,
+            angleRoot: 0,
+            uniqueId: new Date().getTime(),
+            x: positions.x,
+            y: positions.y,
+            px: positions.x,
+            py: positions.y,
+            dist: distFromZeroReal,
+            emissionDist: maxDist,
+            silence: silence,
+            timestamp: new Date().getTime(),
+          };
+          if (window.mouseClicked) {
+            if (
+              positions &&
+              positions.x &&
+              positions.y &&
+              silence &&
+              distFromZeroReal
+            ) {
+              const list = [fakeInput];
+
+              model.updateAimEmitter(JSON.stringify(list));
+              window.showLog("AIM_EMITTER: leftJoystick", fakeInput);
+
+              let logTxt = `x_${positions.x.toFixed(2)}_y_${positions.y.toFixed(
+                2
+              )}_d_${distFromZeroReal.toFixed(3)}_s_${silence.toFixed(3)}`;
+              window.appendLog(logTxt);
+            } else {
+              console.log("NO_POSITIONS", positions, distFromZeroReal);
+            }
+          }
+        }
+      );
+    </script>
+  </body>
+</html>

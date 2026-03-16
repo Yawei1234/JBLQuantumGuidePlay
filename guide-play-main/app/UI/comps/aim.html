@@ -1,0 +1,730 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>AIM test</title>
+    <style>
+      body {
+        background-color: #2f3e53;
+        margin: 0px;
+        padding: 0px;
+      }
+      .slide {
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: crosshair;
+      }
+      .item {
+        display: inline-block;
+        height: 310px;
+        width: 400px;
+        transform: translateX(50%);
+      }
+      .bg-thumbs {
+        background: rgb(0, 0, 255);
+        background: linear-gradient(
+          90deg,
+          rgba(0, 0, 255, 1) 0%,
+          rgba(22, 255, 249, 1) 14%,
+          rgba(108, 219, 130, 1) 28%,
+          rgba(255, 192, 0, 1) 42%,
+          rgba(255, 22, 22, 1) 50%,
+          rgba(255, 192, 0, 1) 58%,
+          rgba(108, 219, 130, 1) 72%,
+          rgba(22, 255, 249, 1) 86%,
+          rgba(0, 0, 255, 1) 100%
+        );
+      }
+
+      .indicator {
+        margin: 0 auto;
+        display: flex;
+      }
+      .doc {
+        width: 3px;
+        height: 30px;
+        background-color: #ff0000;
+        margin: 20px;
+        border: 1px solid #860000;
+        transition: 0.3s;
+      }
+      .doc.hover {
+        transform: scaleY(3);
+      }
+
+      #el:before {
+        background: #26262670;
+        border-radius: 200px 200px 0 0;
+        box-shadow: 3px 1px 8px rgba(0, 0, 0, 0.15) inset;
+        content: "";
+        height: 100px;
+        position: absolute;
+        width: 200px;
+      }
+
+      #el {
+        border-radius: 200px 200px 0 0;
+        height: 100px;
+        overflow: hidden;
+        position: relative;
+        width: 200px;
+      }
+
+      #el:after {
+        background: #ffffff;
+        border-radius: 140px 140px 0 0;
+        bottom: 0;
+        box-shadow: 3px 1px 8px rgba(0, 0, 0, 0.15);
+        color: rgba(255, 0, 0, 0.7);
+        content: attr(data-value);
+        font-family: Lato, Helvetica Neue, Helvetica, Arial, sans-serif;
+        font-size: 20px;
+        font-weight: 100;
+        height: 70px;
+        left: 30px;
+        line-height: 95px;
+        position: absolute;
+        text-align: center;
+        width: 140px;
+        z-index: 3;
+      }
+
+      #needle {
+        border-radius: 4px;
+        bottom: -4px;
+        box-shadow: 3px -1px 4px rgba(0, 0, 0, 0.4);
+        display: block;
+        height: 8px;
+        left: 10px;
+        position: absolute;
+        width: 90px;
+        transform-origin: 100% 4px;
+        transform: rotate(0deg);
+        transition-property: rotate transform;
+        transition-duration: 0.7s;
+        transition-timing-function: ease-out;
+      }
+      #needle_color {
+        background: rgba(21, 255, 0, 0.7);
+        border-radius: inherit;
+      }
+
+      /* #el:hover span {
+            transform: rotate(180deg);
+            } */
+
+      h1,
+      p,
+      strong {
+        display: block;
+        font-family: Lato;
+        text-align: center;
+      }
+
+      h1 {
+        margin-bottom: 0.4em;
+      }
+
+      p {
+        margin-top: 0;
+      }
+
+      strong {
+        color: #efefef;
+        font-size: 2.5em;
+      }
+      .font-mono {
+        font-family: monospace;
+        color: #8a8a8a;
+      }
+    </style>
+    <script src="../js/webcomponents-bundle.js"></script>
+    <script src="../js/tailwind.js"></script>
+    <script src="../js/Tone.js"></script>
+    <script src="../js/tone-ui.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/postme.js"></script>
+  </head>
+  <body>
+    <div id="slideContainer" class="slide">
+      <div class="flex flex-row flex-wrap bg-thumbs" id="itensContainer"></div>
+    </div>
+    <div
+      style="margin-top: -150px"
+      class="w-full flex items-center justify-center"
+    >
+      <div id="el" data-value="90">
+        <span id="needle" class="relative">
+          <span id="needle_color" class="w-full h-full absolute"> </span>
+        </span>
+      </div>
+    </div>
+    <div class="w-full flex items-center justify-center">
+      <div class="indicator w-auto flex justify-center">
+        <div class="doc" id="d1"></div>
+        <div class="doc" id="d2"></div>
+        <div class="doc" id="d3"></div>
+        <div class="doc" id="d4"></div>
+        <div class="doc" id="d5"></div>
+        <div class="doc" id="d6"></div>
+        <div class="doc" id="d7"></div>
+        <div class="doc" id="d8"></div>
+        <div class="doc" id="d9"></div>
+      </div>
+    </div>
+    <div class="w-full flex items-center justify-center">
+      <div class="w-1/2 font-mono flex flex-col select-none">
+        <div class="w-full flex flex-row flex-wrap">
+          <div class="flex-1 text-end pr-4">
+            <input
+              type="range"
+              min="100"
+              max="300"
+              value="0"
+              step="0.01"
+              id="silence_multiplier"
+            />
+          </div>
+          <div id="val_silence" class="flex-1">0</div>
+        </div>
+        <div class="w-full flex flex-row flex-wrap">
+          <div class="flex-1 text-end pr-4">angle_</div>
+          <div id="val_angle" class="flex-1">0</div>
+        </div>
+        <div
+          class="w-full h-6 rounded flex justify-center items-center justify-center"
+        >
+          <div id="blinkTarget" class="w-4 h-4 rounded-full"></div>
+        </div>
+        <div class="w-full flex flex-row flex-wrap">
+          <!-- <div class="flex-1 text-end pr-4">
+                    realValuePercent_
+                </div>
+                <div id="val_realValuePercent" class="flex-1">
+                    0
+                </div> -->
+          <div id="content" class="w-full bg-black rounded p-2"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const plotRange = [-500, 500];
+      const totalSlides = 9; //total slides
+      const slideWidth = 400; //slide width
+      const spacer = 0; //space between slides
+      const beepDuration = 10; //beep duration ms
+      let mouseX = 0; //mouse X var
+      window.globalSilence = 0;
+      window.globalMidPercent = 0;
+      window.globalAngleDisplay = 0;
+      window.globalRealValuePercent = 0;
+
+      window.globalMultipliterValue = 0;
+      window.globalBPM = 0;
+      window.globalCartX = 0;
+      window.globalAngle = 0;
+      let screenW = 1150; // screen width
+      let percentage = 0; // mouseX in screen width percentage
+
+      const slide = document.getElementById("slideContainer"); //slide container
+      const itemsContainer = document.getElementById("itensContainer"); //slide container
+      const slideW = slideWidth * totalSlides + spacer * totalSlides; //scroll content width
+      const elPointer = document.getElementById("el");
+      const needle = document.getElementById("needle");
+      const needle_color = document.getElementById("needle_color");
+      const val_silence = document.getElementById("val_silence");
+      const val_angle = document.getElementById("val_angle");
+      const blinkTarget = document.getElementById("blinkTarget");
+      const silence_multiplier = document.getElementById("silence_multiplier");
+
+      silence_multiplier.addEventListener("input", function (evt) {
+        window.aimState.multiplier = evt.target.value;
+        console.log("silence_multiplier", evt.target.value);
+      });
+
+      let mouseIsMoving = false;
+      let mouseIsMovingTimer = null;
+      let blinkTimer = null;
+      let measuresTimer = null;
+
+      let bufferLoaded = false;
+
+      const heatMapColorforValue = (value) => {
+        // 0    : blue   (hsl(240, 100%, 50%))
+        // 0.25 : cyan   (hsl(180, 100%, 50%))
+        // 0.5  : green  (hsl(120, 100%, 50%))
+        // 0.75 : yellow (hsl(60, 100%, 50%))
+        // 1    : red    (hsl(0, 100%, 50%))
+
+        var h = (1.0 - value) * 240;
+        return "hsl(" + h + ", 100%, 50%)";
+      };
+
+      window.aimAudioProps = {
+        loop: null,
+        buffer: null,
+        player: null,
+        panner: null,
+        meter: null,
+      };
+
+      const createLoop = () => {
+        return new Tone.Loop(function (time) {
+          // synth.triggerAttackRelease("C1", "8n", time)
+          if (mouseIsMoving) {
+            Tone.Draw.schedule(() => {
+              // the callback synced to the animation frame at the given time
+              blinkTarget.style.opacity = 1;
+              setTimeout(() => {
+                blinkTarget.style.opacity = 0;
+              }, 10);
+            }, time);
+
+            setSilence(window.globalSilence);
+            setPosition(
+              window.aimAudioProps.panner,
+              window.globalCartX / 125,
+              0,
+              0
+            );
+            window.aimAudioProps.player.restart(time);
+
+            blinkTarget.style.transform =
+              "translateX(" +
+              window.globalCartX / (window.globalMultipliterValue / 100) +
+              "px)";
+          }
+        }, "12n");
+      };
+
+      const refreshAudioProps = (snd) => {
+        if (!window.aimAudioProps.buffer) {
+          window.aimAudioProps.buffer = new Tone.ToneAudioBuffer(snd, () => {
+            bufferLoaded = true;
+          });
+        } else {
+          window.aimAudioProps.buffer.load(snd, () => {
+            bufferLoaded = true;
+            console.log("TONE_BUFFER_LOADED");
+          });
+        }
+
+        if (!window.aimAudioProps.panner) {
+          window.aimAudioProps.panner = new Tone.Panner3D({
+            panningModel: "HRTF",
+            positionX: 0,
+            positionY: 0,
+            positionZ: 0,
+          }).toDestination();
+        }
+
+        if (!window.aimAudioProps.player) {
+          window.aimAudioProps.player = new Tone.Player({
+            url: snd,
+            loop: false,
+          })
+            .connect(window.aimAudioProps.panner)
+            .sync()
+            .start(0);
+        } else {
+          window.aimAudioProps.player.load(snd, () => {
+            console.log("TONE_PLAYER_LOADED");
+          });
+        }
+
+        if (!window.aimAudioProps.meter) {
+          window.aimAudioProps.meter = new Tone.Meter({ channels: 2 });
+          Tone.Destination.chain(window.aimAudioProps.meter);
+
+          meter({
+            tone: window.aimAudioProps.meter,
+            parent: document.querySelector("#content"),
+            width: 100,
+            backgroundColor: "rgb(0,0,0)",
+          });
+        }
+
+        if (!window.aimAudioProps.loop) {
+          window.aimAudioProps.loop = createLoop();
+          window.aimAudioProps.loop.start(0);
+        } else {
+          window.aimAudioProps.loop.stop(0);
+          window.aimAudioProps.loop = null;
+          window.aimAudioProps.loop = createLoop();
+          window.aimAudioProps.loop.start(0);
+        }
+
+        setTimeout(() => {
+          Tone.Transport.start();
+        }, 1000);
+      };
+
+      function setRotation(angle) {
+        Tone.Listener.forwardX.value = Math.sin(angle);
+        Tone.Listener.forwardY.value = 0;
+        Tone.Listener.forwardZ.value = -Math.cos(angle);
+      }
+      function setSilence(silence) {
+        if (bufferLoaded) {
+          let minValue = 10;
+          let newValue = 220 - silence * window.globalMultipliterValue;
+          Tone.Transport.bpm.value = newValue < minValue ? minValue : newValue;
+
+          window.globalBPM = Tone.Transport.bpm.value;
+        }
+      }
+      function setPosition(panner, nx = null, ny = null, nz = null) {
+        const newValues = {
+          x: nx ? parseFloat(nx) : panner.get().positionX,
+          y: ny ? parseFloat(ny) : panner.get().positionY,
+          z: nz ? parseFloat(nz) : panner.get().positionZ,
+        };
+        console.log("newValues", newValues);
+
+        panner.setPosition(newValues.x, newValues.y, newValues.z);
+      }
+
+      const init = (snd) => {
+        // TONE.JS
+
+        refreshAudioProps(snd);
+
+        Tone.context.updateInterval = 0.005;
+        Tone.Transport.bpm.value = 180;
+
+        // UI
+
+        itemsContainer.style.width = `${slideW + slideWidth}px`; //set scroll content width
+
+        // // append slides
+        for (let i = 0; i < totalSlides; i++) {
+          let item = document.createElement("div");
+          item.classList.add("item");
+          item.setAttribute("id", i + 1);
+          itensContainer.appendChild(item);
+        }
+
+        const easeOutQuint = (x) => {
+          return 1 - Math.pow(1 - x, 5);
+        };
+        const easeInOutQuint = (x) => {
+          return x < 0.5
+            ? 16 * x * x * x * x * x
+            : 1 - Math.pow(-2 * x + 2, 5) / 2;
+        };
+
+        const blinkElement = (elm, interval, duration) => {
+          elm.style.visibility =
+            elm.style.visibility === "hidden" ? "visible" : "hidden";
+          if (duration > 0) {
+            setTimeout(
+              blinkElement,
+              interval,
+              elm,
+              interval,
+              duration - interval
+            );
+          } else {
+            elm.style.visibility = "visible";
+          }
+        };
+
+        const toggleBlink = () => {
+          let currentOpacity = blinkTarget.style.opacity;
+          if (currentOpacity == 0) {
+            // generateBeepSound();
+            setSilence(window.globalSilence);
+            setPosition(
+              window.aimAudioProps.panner,
+              window.globalCartX / 125,
+              0,
+              0
+            );
+          }
+          blinkTarget.style.opacity = currentOpacity == 0 ? 1 : 0;
+          blinkTarget.style.transform =
+            "translateX(" + window.globalCartX / 4 + "px)";
+          setTimeout(toggleBlink, beepDuration + window.globalSilence * 100);
+        };
+
+        let switch1 = 1;
+        let items = slide.querySelectorAll(".item"); // item elements
+
+        items.forEach((item, index) => {
+          let total = items.length - 1;
+          let percentage = (index / total) * 100;
+          console.log("percent-index", percentage);
+
+          if (index > items.length / 2 - 1) {
+            percentage = 100 - percentage;
+          } else {
+            percentage = percentage;
+          }
+          if (percentage < 10) {
+            percentage = 10;
+          }
+
+          // item.style.height = `${percentage}%`;
+          // item.style.opacity = `${percentage * 0.01}`;
+          // item.style.transform = `scale(${percentage * 0.01})`;
+          item.addEventListener("mouseover", () => {
+            switch1 = item.getAttribute("id");
+
+            // document.querySelector("#gg").textContent = "toggled" + switch1;
+
+            let docs = document.querySelectorAll(".doc");
+            docs.forEach((doc) => {
+              doc.classList.remove("hover");
+            });
+            document.querySelector("#d" + switch1).classList.add("hover");
+          });
+        });
+      };
+
+      //when hover slide, then start function
+      let measuresTimeout = null;
+      let measuresRunning = false;
+      let tick = 0;
+
+      let measuresInterval = null;
+      let measuresIntervalRunning = false;
+
+      slide.addEventListener("mousemove", (event) => {
+        mouseX = event.clientX;
+        mouseIsMoving = true;
+
+        if (measuresRunning) {
+          clearTimeout(measuresTimeout);
+          measuresTimeout = setTimeout(() => {
+            measuresRunning = false;
+            clearInterval(measuresInterval);
+          }, 1000);
+        } else {
+          measuresRunning = true;
+          clearInterval(measuresInterval);
+          measuresInterval = setInterval(aimMeasures, 10);
+        }
+
+        // timers
+        clearTimeout(mouseIsMovingTimer);
+        mouseIsMovingTimer = setTimeout(() => {
+          mouseIsMoving = false;
+        }, 3000);
+
+        percentage = mouseX / screenW;
+        percentage = percentage;
+
+        let midPercent = 0;
+        if (mouseX > screenW / 2) {
+          midPercent = 100 - percentage * 100;
+        } else {
+          midPercent = percentage * 100;
+        }
+        midPercent = midPercent * 2;
+        window.globalMidPercent = midPercent;
+
+        console.log("MID_PERCENT: " + midPercent);
+        console.log(
+          "MOUSE_X : " + mouseX,
+          "SCREEN_W : " + screenW,
+          "PERCENTAGE : " + percentage,
+          "SLIDE_W : " + slideW
+        );
+
+        let targetX = slideW * percentage - slideWidth * percentage;
+
+        let scrollAMT = parseInt(targetX) - 180;
+
+        document.getElementById("slideContainer").scrollLeft = scrollAMT;
+
+        let angle = Math.floor(percentage * 100 * 1.8);
+
+        needle.style.transform = `rotate(${angle}deg)`;
+        needle_color.style.backgroundColor = heatMapColorforValue(
+          midPercent / 100
+        );
+        blinkTarget.style.backgroundColor = heatMapColorforValue(
+          midPercent / 100
+        );
+      });
+
+      const updateState = () => {
+        window.globalMultipliterValue = silence_multiplier.value;
+        val_angle.innerHTML = `${Math.abs(window.globalAngleDisplay).toFixed(
+          2
+        )}°_cX_${window.globalCartX.toFixed(2)}_cY_0`;
+        val_silence.innerHTML = `bpm_${window.globalBPM.toFixed(1)}_m_${
+          window.globalMultipliterValue
+        }_s_${window.globalSilence.toFixed(2)}`;
+
+        // get silence_multiplier value
+
+        elPointer.setAttribute(
+          "data-value",
+          `${Math.abs(window.globalRealValuePercent).toFixed(2)}`
+        );
+        window.aimState = {
+          ...window.aimState,
+          silence: parseFloat(window.globalSilence.toFixed(2)),
+          angle: parseFloat(window.globalAngleDisplay.toFixed(2)),
+          x: parseInt(window.globalCartX),
+          multiplier: parseFloat(window.globalMultipliterValue),
+        };
+        if (mouseIsMoving) {
+          setAIMSTATE();
+        }
+      };
+
+      const aimMeasures = () => {
+        if (!needle || !el) return;
+        if (!mouseIsMoving) {
+          updateState();
+          return;
+        }
+
+        // matrix-to-degree conversion from https://css-tricks.com/get-value-of-css-rotation-through-javascript/
+        let st = window.getComputedStyle(needle, null);
+        let tr = st.getPropertyValue("-webkit-transform");
+
+        let values = tr.split("(")[1];
+        values = values.split(")")[0];
+        values = values.split(",");
+
+        let a = values[0];
+        let b = values[1];
+        let c = values[2];
+        let d = values[3];
+
+        let scale = Math.sqrt(a * a + b * b);
+
+        // arc sin, convert from radians to degrees, round
+        let sin = b / scale;
+        let angle = Math.round(Math.atan2(b, a) * (180 / Math.PI));
+        let realAngle = 0;
+
+        if (angle > 90) {
+          realAngle = (angle - 90) * 100;
+        } else {
+          realAngle = -90 + (angle - 90) * 100;
+        }
+
+        let realValuePercent = (Math.abs(realAngle) / 90) * 0.01;
+
+        // ${angle}°-
+        let angleDisplay = 0;
+
+        let cartX = 0;
+        if (angle > 90) {
+          angleDisplay = angle - 180;
+          cartX = plotRange[0] - (plotRange[0] * window.globalMidPercent) / 100;
+        } else if (angle == 90) {
+          angleDisplay = 0;
+          realValuePercent = 0;
+        } else {
+          angleDisplay = angle;
+          cartX = plotRange[1] - (plotRange[1] * window.globalMidPercent) / 100;
+        }
+        window.globalAngleDisplay = angleDisplay;
+        window.globalRealValuePercent = realValuePercent;
+        window.globalCartX = cartX;
+        window.globalAngle = angle;
+
+        window.globalSilence = Math.abs(realValuePercent);
+
+        updateState();
+      };
+
+      // measuresTimer = setInterval(aimMeasures, 10);
+    </script>
+    <script type="text/javascript">
+      const ParentHandshake = PostMe.ParentHandshake;
+      const ChildHandshake = PostMe.ChildHandshake;
+
+      // For safety it is strongly adviced to pass the explicit child origin instead of '*'
+      const messenger = new PostMe.WindowMessenger({
+        localWindow: window,
+        remoteWindow: window.parent,
+        remoteOrigin: "*",
+      });
+
+      window.connected = null;
+      window.remoteHandle = null;
+      window.localHandle = null;
+
+      // console.log('Child: Waiting for handshake from parent...');
+      // console.log("Child: messenger", messenger)
+      // console.log("Child: localWindow", window)
+      // console.log("Child: remoteWindow", window.parent)
+
+      window.aimState = {
+        silence: 0,
+        angle: 0,
+        x: 0,
+        y: 0,
+        dist: 0,
+        multiplier: 1.5,
+        stopped: false,
+      };
+
+      window.beepString = "null";
+
+      let model = {
+        updateBeep: function (e) {
+          console.log("Child-AIM: updateBeep", e);
+
+          parseDataModel(e, refreshAudioProps);
+        },
+      };
+
+      PostMe.ChildHandshake(messenger, model).then((connection) => {
+        // connection is an instance of Connection
+        window.connected = connection;
+        // console.log('Child: Handshake complete', connection);
+
+        window.remoteHandle = connection.remoteHandle();
+        window.localHandle = connection.localHandle();
+
+        // countSpan.innerHTML = count.toString();
+        window.remoteHandle.addEventListener("ping", function () {
+          // alert('Child: Received ping event');
+          // console.log('Child: Received ping event');
+        });
+
+        setTimeout(() => {
+          getDataModel(init);
+          // init();
+        }, 1000);
+      });
+
+      const parseDataModel = async (e, callback = null) => {
+        const parse = JSON.parse(e);
+        window.aimConfigs = parse;
+        // console.log("Child-AIM-EMITTER: parseDataModel", e, parse);
+
+        const AimAlerts = window.aimConfigs.find((e) => e.id == "AimAlerts");
+        if (!AimAlerts) return;
+        const AimAlertsWav = AimAlerts.subitems.find(
+          (e) => e.id == "SfxSelect"
+        );
+        if (!AimAlertsWav) return;
+        if (callback) {
+          callback(`/sounds/${AimAlertsWav.value}`);
+        }
+      };
+
+      let getDataModel = (callback) => {
+        if (!window.connected) return;
+
+        window.remoteHandle.call("getDataModel", "AimAlerts").then((result) => {
+          parseDataModel(result, callback);
+        });
+      };
+
+      let setAIMSTATE = () => {
+        if (!window.connected) return;
+
+        let stateSTR = JSON.stringify(window.aimState);
+        window.remoteHandle.call("setAimState", stateSTR);
+      };
+    </script>
+  </body>
+</html>

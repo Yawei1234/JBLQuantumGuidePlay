@@ -1,0 +1,22 @@
+{
+    "/js/app.js": "/js/app.js",
+    "/css/app.css": "/css/app.css",
+    "/index.html": "/index.html",
+    "/AppComponents/HtmlParticles/test.html": "/AppComponents/HtmlParticles/test.html",
+    "/AppComponents/HtmlParticles/tophandlers.html": "/AppComponents/HtmlParticles/tophandlers.html",
+    "/AppComponents/HtmlParticles/wrap.html": "/AppComponents/HtmlParticles/wrap.html",
+    "/images/100x100.png": "/images/100x100.png",
+    "/images/bg.png": "/images/bg.png",
+    "/images/200x200.png": "/images/200x200.png",
+    "/images/600x400.png": "/images/600x400.png",
+    "/images/800x600.png": "/images/800x600.png",
+    "/images/800x800.png": "/images/800x800.png",
+    "/fonts/fontawesome/fa-brands-400.ttf": "/fonts/fontawesome/fa-brands-400.ttf",
+    "/fonts/fontawesome/fa-brands-400.woff2": "/fonts/fontawesome/fa-brands-400.woff2",
+    "/fonts/fontawesome/fa-regular-400.ttf": "/fonts/fontawesome/fa-regular-400.ttf",
+    "/fonts/fontawesome/fa-regular-400.woff2": "/fonts/fontawesome/fa-regular-400.woff2",
+    "/fonts/fontawesome/fa-solid-900.ttf": "/fonts/fontawesome/fa-solid-900.ttf",
+    "/fonts/fontawesome/fa-solid-900.woff2": "/fonts/fontawesome/fa-solid-900.woff2",
+    "/fonts/fontawesome/fa-v4compatibility.ttf": "/fonts/fontawesome/fa-v4compatibility.ttf",
+    "/fonts/fontawesome/fa-v4compatibility.woff2": "/fonts/fontawesome/fa-v4compatibility.woff2"
+}

@@ -1,0 +1,15 @@
+SignTool=C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe
+PFX=.\certificate.pfx
+Password=loveIsTheAnswer
+TimeStamp=http://timestamp.sectigo.com
+TimeStampRFC3161=Yes
+TimeStampSHA256=Yes
+ProgramTitle=Guide Play
+ProgramURL=https://www.bolha.com.br/
+File1=.\Output\guideplay-setup.exe
+File2=.\app\dist\guide-play\guide-play.exe
+File3=.\app\dist\guide-play\_internal\server\guide-play-services-cli.exe
+File4=.\app\ocr_wrapper\guide-play-ocr-wrapper.exe
+SignatureAppended=No
+SignatureSHA256=Yes
+ResultVerbose=Yes

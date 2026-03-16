@@ -1,0 +1,56 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1922.19 1081.23">
+  <rect id="144113_home_play_match" data-name="144113_home_play_match" y="1.23" width="1920"
+    height="1080" style="fill: none" />
+  <image width="1920" height="1080" transform="translate(0 0)"
+    xlink:href="031624_matchmaking_casual_deathmatch.png" />
+  <rect id="GO_" data-name="GO " x="1535.62" y="1005.93" width="300" height="55" style="fill: aqua" />
+  <rect id="Defusal_Group_Sigma" data-name="Defusal Group Sigma" x="329.62" y="196.93" width="347"
+    height="745" style="fill: #f0f" />
+  <rect id="Defusal_Group_Delta" data-name="Defusal Group Delta" x="693.95" y="196.93" width="347"
+    height="745" style="fill: #f0f" />
+  <rect id="Dust_2" data-name="Dust 2" x="1058.29" y="196.93" width="347" height="745"
+    style="fill: #f0f" />
+  <rect id="Hostage_Group" data-name="Hostage Group" x="1422.62" y="196.93" width="347" height="745"
+    style="fill: #f0f" />
+  <rect id="Open_Party" data-name="Open Party" x="173.02" y="367.1" width="49.79" height="27.32"
+    style="fill: blue;isolation: isolate;opacity: 0.4000000059604645" />
+  <rect id="Dashboard" y="1.28" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Watch_Matches_and_Tournaments" data-name="Watch Matches and Tournaments" x="64" y="1.28"
+    width="64" height="64" style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Settings" x="128" y="1.28" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Quit_to_Desktop" data-name="Quit to Desktop" x="192" y="1.28" width="64" height="64"
+    style="fill: red;isolation: isolate;opacity: 0.5" />
+  <rect id="Inventory" x="674.1" y="7.18" width="122.81" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Matchmaking" x="761.17" y="68.46" width="106.93" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Premier" x="583.05" y="115.44" width="80.58" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Competitive" x="667.82" y="115.44" width="100.49" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Wingman" x="771.74" y="115.44" width="90.28" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Casual" x="867.45" y="115.44" width="78.82" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Deathmatch" x="951.45" y="115.44" width="110.73" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Private_Matchmaking" data-name="Private Matchmaking" x="1166.68" y="115.44"
+    width="169.71" height="42.04" style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Practice" x="869.7" y="68.46" width="99.68" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Workshop_Maps" data-name="Workshop Maps" x="971.7" y="68.46" width="124.19"
+    height="42.04" style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Loadout" x="803.04" y="7.18" width="117.96" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Play" x="926.1" y="7.18" width="117.96" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Store" x="1047.38" y="7.18" width="103.66" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="News" x="1154.87" y="7.18" width="87.32" height="55"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+  <rect id="Arms_Race" data-name="Arms Race" x="1066.18" y="115.44" width="96.33" height="42.04"
+    style="fill: #ff0;isolation: isolate;opacity: 0.5" />
+</svg>

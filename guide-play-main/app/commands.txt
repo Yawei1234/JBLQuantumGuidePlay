@@ -1,0 +1,14 @@
+url_execute
+
++exec autoexec.cfg
+
+findstr /snipr "autoexec" *.*
+
+findstr /snipr "920322189" *.*
+
+
+# steam protocol schema
+Computador\HKEY_CLASSES_ROOT\steam\Shell\Open\Command
+
+
+Computador\HKEY_USERS\S-1-5-21-1234589532-4112164029-2120629231-1002\Software\Classes\csgo\Shell\Open

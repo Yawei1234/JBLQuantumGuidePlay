@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Theremin</title>
+
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1"
+    />
+
+    <script src="../js/webcomponents-bundle.js"></script>
+    <script src="../js/tailwind.js"></script>
+    <script src="../js/Tone.js"></script>
+    <script src="../js/tone-ui.js"></script>
+    <script src="../js/components.js"></script>
+    <script src="../js/postme.js"></script>
+
+    <style type="text/css">
+      tone-play-toggle {
+        margin-bottom: 10px;
+      }
+      body {
+        background-color: #000;
+        color: #5a5a5a;
+      }
+      ::-webkit-scrollbar {
+        width: 0px;
+        background: transparent; /* make scrollbar transparent */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="overflow-hidden w-full h-full bg-gray-800" id="content">
+      <tone-loader class="bg-gray-700 overflow-hidden"></tone-loader>
+    </div>
+
+    <script type="text/javascript">
+      window.thereminState = {
+        x: 0,
+        y: 0,
+        volume: 0.3,
+        freq: 0,
+        width: 1920,
+        height: 1080,
+        waveform: "square",
+        status: "stopped",
+      };
+
+      let lastX = 0;
+      let lastY = 0;
+      let lastUpdate = new Date().getTime();
+
+      const panner = new Tone.AutoPanner({
+        frequency: 4,
+        depth: 1,
+      })
+        .toDestination()
+        .start();
+
+      const pitchShift = new Tone.PitchShift().toDestination();
+      const toneFFT = new Tone.FFT();
+      pitchShift.connect(toneFFT);
+
+      let screenWidth = 1920;
+      let screenHeight = 1080;
+      // fft({
+      // 	parent: document.querySelector("#content"),
+      // 	tone: toneFFT,
+      // });
+
+      const toneWaveform = new Tone.Waveform();
+
+      const osc = new Tone.Oscillator({
+        type: "square",
+        frequency: 48,
+        // modulationFrequency: 0.01,
+        // volume: -32,
+        volume: Tone.gainToDb(0.03),
+      })
+        // .connect(pitchShift)
+        .connect(toneWaveform)
+        .toDestination();
+
+      waveform({
+        tone: toneWaveform,
+        parent: document.querySelector("#content"),
+      });
+
+      const oscUpdater = function () {
+        let shouldStop = false;
+        if (!window.thereminState || window.thereminState == null) {
+          shouldStop = true;
+        }
+
+        if (
+          !window.thereminState.x ||
+          typeof window.thereminState.x !== "number"
+        ) {
+          shouldStop = true;
+        }
+        if (
+          !window.thereminState.y ||
+          typeof window.thereminState.y !== "number"
+        ) {
+          shouldStop = true;
+        }
+        if (window.thereminState.x == null || window.thereminState.y == null) {
+          shouldStop = true;
+        }
+
+        if (shouldStop) {
+          window.thereminState.status = "stopped";
+        }
+
+        if (
+          lastX !== window.thereminState.x ||
+          lastY !== window.thereminState.y
+        ) {
+          lastX = window.thereminState.x;
+          lastY = window.thereminState.y;
+          lastUpdate = new Date().getTime();
+        } else {
+          if (new Date().getTime() - lastUpdate > 3000) {
+            window.thereminState.status = "stopped";
+          }
+        }
+
+        if (window.thereminState.status == "stopped") {
+          osc.stop();
+          osc.frequency.value = 48;
+          osc.volume.value = Tone.gainToDb(0.03);
+        } else {
+          osc.start();
+        }
+        if (window.thereminState.height) {
+          screenHeight = window.thereminState.height;
+        }
+        if (window.thereminState.width) {
+          screenWidth = window.thereminState.width;
+        }
+
+        let useWaveform = false;
+        if (window.thereminState.waveform) {
+          if (window.thereminState.waveform !== "none") {
+            osc.type = window.thereminState.waveform;
+            useWaveform = true;
+          }
+        }
+        if (!useWaveform) {
+          if (
+            window.thereminState &&
+            window.thereminState.x &&
+            typeof window.thereminState.x === "number"
+          ) {
+            osc.frequency.value = window.thereminState.x;
+          } else {
+            osc.frequency.value = 48;
+          }
+
+          osc.type = "square";
+          // osc.modulationFrequency =
+          //   (window.thereminState.y / screenHeight) * 0.01;
+          // osc.volume.value = (window.thereminState.y / screenHeight) * -48;
+          if (
+            window.thereminState &&
+            typeof window.thereminState.volume &&
+            window.thereminState.volume
+          ) {
+            osc.volume.value = Tone.gainToDb(window.thereminState.volume * 0.1);
+          } else {
+            osc.volume.value = Tone.gainToDb(0.1);
+          }
+
+          // osc.phase = (window.thereminState.y / screenHeight) * 180;
+          // panner.frequency.value = window.thereminState.y / screenHeight * 10;
+
+          if (
+            window.thereminState &&
+            window.thereminState.y &&
+            typeof window.thereminState.y === "number"
+          ) {
+            pitchShift.pitch =
+              parseFloat(window.thereminState.y / screenHeight) * 0.01;
+          } else {
+            pitchShift.pitch = 0;
+          }
+        }
+
+        if (useWaveform) {
+          if (window.thereminState.freq) {
+            osc.frequency.value = window.thereminState.freq;
+          } else {
+            osc.frequency.value = 48;
+          }
+          if (window.thereminState.volume) {
+            osc.volume.value = Tone.gainToDb(window.thereminState.volume * 0.1);
+          } else {
+            osc.volume.value = -48;
+          }
+        }
+      };
+
+      const ParentHandshake = PostMe.ParentHandshake;
+      const ChildHandshake = PostMe.ChildHandshake;
+
+      // For safety it is strongly adviced to pass the explicit child origin instead of '*'
+      const messenger = new PostMe.WindowMessenger({
+        localWindow: window,
+        remoteWindow: window.parent,
+        remoteOrigin: "*",
+      });
+
+      window.connected = null;
+      window.remoteHandle = null;
+      window.localHandle = null;
+      window.thereminInterval = null;
+      window.thereminTimeout = null;
+
+      clearInterval(window.thereminInterval);
+      window.thereminInterval = setInterval(oscUpdater, 10);
+
+      let model = {
+        updateTheremin: function (e) {
+          const parse = JSON.parse(e);
+          console.log("Child-THEREMIN: updateTheremin", e, parse);
+          window.thereminState = parse;
+        },
+      };
+
+      PostMe.ChildHandshake(messenger, model).then((connection) => {
+        // connection is an instance of Connection
+        window.connected = connection;
+        // console.log("Child: Handshake complete", connection);
+
+        window.remoteHandle = connection.remoteHandle();
+        window.localHandle = connection.localHandle();
+
+        // countSpan.innerHTML = count.toString();
+        window.remoteHandle.addEventListener("ping", function () {
+          // alert('Child: Received ping event');
+          // console.log("Child: Received ping event");
+        });
+      });
+
+      // osc.start();
+    </script>
+  </body>
+</html>

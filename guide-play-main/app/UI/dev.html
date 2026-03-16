@@ -1,0 +1,1393 @@
+<html lang="en">
+  <!-- Frame Header -->
+  <head>
+    <!-- Meta tags  -->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <title>Guide Play</title>
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+
+    <!-- CSS Assets -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- Javascript Assets -->
+    <script src="js/app.js" defer></script>
+    <script src="js/map.js" defer></script>
+    <script src="js/tailwind.js" defer></script>
+    <script src="js/lottie-player.js"></script>
+    <script src="js/htmx.min.js"></script>
+    <script src="js/postme.js"></script>
+    <script src="js/radarFunctions.js"></script>
+    <script src="js/entities.js"></script>
+    <script type="text/javascript" src="js/controlKit.js"></script>
+  </head>
+  <body>
+    <div
+      class="w-full h-full bg-gray-900 flex items-center justify-center text-white text-4xl"
+    >
+      <div
+        class="fixed top-0 left-0 w-full h-[150px] bg-gray-900 flex items-center justify-center"
+      >
+        <div class="w-full flex justify-center">
+          <div class="w-1/2 flex justify-center">
+            <!-- <img
+              id="imgPlayer"
+              class="object-scale-down"
+              src="images/lastframe_radar.png"
+              alt="Radar"
+              draggable="false"
+              style="width: 100px; height: 100px"
+            /> -->
+          </div>
+          <div class="w-1/2 flex justify-center flex flex-col">
+            <div class="w-full flex justify-center">
+              <canvas id="canvas" width="100" height="100"></canvas>
+            </div>
+            <div class="w-full text-center text-xs font-mono" id="status"></div>
+            <div class="w-full flex items-center justify-center">
+              <div id="color" style="width: 30px; height: 30px"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="w-full flex flex-col">
+        <div
+          class="w-full flex justify-center w-full h-[480px] bg-gray-900 flex items-center justify-center"
+        >
+          <canvas
+            id="screen"
+            class="object-contain"
+            style="width: 100%; height: 100%"
+          ></canvas>
+        </div>
+      </div>
+    </div>
+    <script>
+      const canvas = document.getElementById("canvas");
+      const canvasContext = canvas.getContext("2d");
+      const imgPlayer = document.getElementById("imgPlayer");
+      var lastFrameImg = new Image();
+      var imgPlayerInterval;
+
+      window.floorgrid = [];
+
+      window.setState = (key, value, extras) => {
+        console.log("DEV_WINDOW_TRANSFER___state", key, value, extras);
+        if (key == "binarymap") {
+          window.binaryMap = value;
+        }
+        if (key == "floorgrid") {
+          const parsed = JSON.parse(value);
+          window.floorgrid = parsed.floorgrid;
+          window.angleP = parseInt(parsed.angleP);
+
+          if (window.angleP) {
+            // invert ccw
+            window.angleP = 360 - window.angleP;
+            window.playerAngle = degreeToRadian(window.angleP);
+          }
+        }
+      };
+
+      lastFrameImg.addEventListener("load", function () {
+        console.log("image loaded");
+      });
+
+      // imgPlayerInterval = setTimeout(() => {
+      //   let seed = Math.random();
+      //   imgPlayer.src = "images/lastframe_radar.png?seed=" + seed;
+      //   drawImageFromWebUrl(imgPlayer.src);
+      // }, 300);
+
+      function getElementPosition(obj) {
+        var curleft = 0,
+          curtop = 0;
+        if (obj.offsetParent) {
+          do {
+            curleft += obj.offsetLeft;
+            curtop += obj.offsetTop;
+          } while ((obj = obj.offsetParent));
+          return { x: curleft, y: curtop };
+        }
+        return undefined;
+      }
+
+      function getEventLocation(element, event) {
+        var pos = getElementPosition(element);
+
+        return {
+          x: event.pageX - pos.x,
+          y: event.pageY - pos.y,
+        };
+      }
+
+      function rgbToHex(r, g, b) {
+        if (r > 255 || g > 255 || b > 255) throw "Invalid color component";
+        return ((r << 16) | (g << 8) | b).toString(16);
+      }
+      function hsvToHex(h, s, v) {
+        // max h = 180
+        // max s = 255
+        // max v = 255
+
+        let h1 = h / 180;
+        let s1 = s / 255;
+        let v1 = v / 255;
+
+        // convert hsv percentage to rgb
+        let r, g, b;
+        let i = Math.floor(h1 * 6);
+        let f = h1 * 6 - i;
+        let p = v1 * (1 - s1);
+        let q = v1 * (1 - f * s1);
+        let t = v1 * (1 - (1 - f) * s1);
+        switch (i % 6) {
+          case 0:
+            (r = v1), (g = t), (b = p);
+            break;
+          case 1:
+            (r = q), (g = v1), (b = p);
+            break;
+          case 2:
+            (r = p), (g = v1), (b = t);
+            break;
+          case 3:
+            (r = p), (g = q), (b = v1);
+            break;
+          case 4:
+            (r = t), (g = p), (b = v1);
+            break;
+          case 5:
+            (r = v1), (g = p), (b = q);
+            break;
+        }
+        return (
+          "#" +
+          ("00" + Math.floor(r * 255).toString(16)).slice(-2) +
+          ("00" + Math.floor(g * 255).toString(16)).slice(-2) +
+          ("00" + Math.floor(b * 255).toString(16)).slice(-2)
+        );
+      }
+
+      function drawImageFromWebUrl(sourceurl) {
+        lastFrameImg.crossOrigin = "Anonymous";
+        lastFrameImg.setAttribute("crossOrigin", "anonymous");
+
+        canvasContext.imageSmoothingEnabled = false;
+
+        lastFrameImg.addEventListener("load", function () {
+          // The image can be drawn from any source
+          console.log("image loaded drawing...");
+          canvasContext.drawImage(
+            lastFrameImg,
+            0,
+            0,
+            lastFrameImg.width,
+            lastFrameImg.height,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+          );
+
+          const playerRadius = 8;
+          // draw a white circle on the player position
+          canvasContext.fillStyle = "#ffffff";
+          canvasContext.beginPath();
+          canvasContext.arc(
+            canvas.width / 2,
+            canvas.height / 2,
+            playerRadius,
+            0,
+            2 * Math.PI
+          );
+          canvasContext.fill();
+        });
+        lastFrameImg.setAttribute("src", sourceurl);
+
+        // iterate to canvas pixels
+        let pixels = [];
+        const maxRadius = 40;
+        return;
+        // for (let y = 0; y < canvas.height; y++) {
+        //   let row = [];
+        //   for (let x = 0; x < canvas.width; x++) {
+        //     let pixelData = canvasContext.getImageData(x, y, 1, 1).data;
+        //     let hex =
+        //       "#" +
+        //       (
+        //         "000000" + rgbToHex(pixelData[0], pixelData[1], pixelData[2])
+        //       ).slice(-6);
+        //     row.push(hex);
+        //     // if is white
+        //     const dist = distanceFromPointToPoint(
+        //       canvas.width / 2,
+        //       canvas.height / 2,
+        //       x,
+        //       y
+        //     );
+        //     if (
+        //       pixelData[0] == 255 &&
+        //       pixelData[1] == 255 &&
+        //       pixelData[2] == 255
+        //     ) {
+        //       setMapFromPosition(y, x, 0);
+        //     } else {
+        //       if (dist < maxRadius) {
+        //         setMapFromPosition(y, x, 2);
+        //       } else {
+        //         setMapFromPosition(y, x, 3);
+        //       }
+        //     }
+        //   }
+        //   pixels.push(row);
+        // }
+      }
+
+      // draw lastFrameImg loop
+      function drawLoop() {
+        drawImageFromWebUrl(imgPlayer.src);
+        requestAnimationFrame(drawLoop);
+      }
+      function updateMapGrid() {
+        if (window.floorgrid.length == window.map.length) {
+          // window.map = window.floorgrid;
+          window.map = window.map.map((v, i) => {
+            if (!window.floorgrid[i]) {
+              return 0;
+            }
+            return window.floorgrid[i] == 0 ? 1 : 2;
+          });
+        }
+      }
+      function updateGridLoop() {
+        updateMapGrid();
+        requestAnimationFrame(updateGridLoop);
+      }
+
+      window.setTimeout(() => {
+        // drawLoop();
+        updateGridLoop();
+      }, 1000);
+
+      function hexToHSV(hex) {
+        var r = parseInt(hex.slice(1, 3), 16) / 255,
+          g = parseInt(hex.slice(3, 5), 16) / 255,
+          b = parseInt(hex.slice(5, 7), 16) / 255;
+
+        var max = Math.max(r, g, b),
+          min = Math.min(r, g, b),
+          d = max - min,
+          h,
+          s = max === 0 ? 0 : d / max,
+          v = max;
+
+        switch (max) {
+          case min:
+            h = 0;
+            break;
+          case r:
+            h = (g - b) / d + (g < b ? 6 : 0);
+            break;
+          case g:
+            h = (b - r) / d + 2;
+            break;
+          case b:
+            h = (r - g) / d + 4;
+            break;
+        }
+
+        h /= 6;
+
+        return {
+          h: h,
+          s: s,
+          v: v,
+        };
+      }
+
+      //   mouse click event
+      canvas.addEventListener(
+        "click",
+        function (e) {
+          var eventLocation = getEventLocation(this, e);
+          var pixelData = context.getImageData(
+            eventLocation.x,
+            eventLocation.y,
+            1,
+            1
+          ).data;
+
+          setMapFromPosition(eventLocation.y, eventLocation.x, 100, 100, 0);
+
+          // var eventLocation = getEventLocation(this, e);
+          // var coord = "x=" + eventLocation.x + ", y=" + eventLocation.y;
+
+          // // Get the data of the pixel according to the location generate by the getEventLocation function
+          // var context = this.getContext("2d");
+          // //   willReadFrequently
+          // var pixelData = context.getImageData(
+          //   eventLocation.x,
+          //   eventLocation.y,
+          //   1,
+          //   1
+          // ).data;
+
+          // // If transparency on the image
+          // if (
+          //   pixelData[0] == 0 &&
+          //   pixelData[1] == 0 &&
+          //   pixelData[2] == 0 &&
+          //   pixelData[3] == 0
+          // ) {
+          //   coord +=
+          //     " (Transparent color detected, cannot be converted to HEX)";
+          // }
+
+          // var hex =
+          //   "#" +
+          //   (
+          //     "000000" + rgbToHex(pixelData[0], pixelData[1], pixelData[2])
+          //   ).slice(-6);
+
+          // // copy hex to clipboard
+          // navigator.clipboard.writeText(hex).then(
+          //   function () {
+          //     console.log("Async: Copying to clipboard was successful!");
+          //   },
+          //   function (err) {
+          //     console.error("Async: Could not copy text: ", err);
+          //   }
+          // );
+
+          // let hsv = hexToHSV(hex);
+          // // Draw the color and coordinates.
+          // document.getElementById(
+          //   "status"
+          // ).innerHTML = `${coord} <br> ${hex} <br> ${JSON.stringify(hsv)}`;
+          // document.getElementById("color").style.backgroundColor = hex;
+          // document.getElementById("status").style.backgroundColor = hex;
+        },
+        false
+      );
+
+      canvas.addEventListener(
+        "mousemove",
+        function (e) {
+          var eventLocation = getEventLocation(this, e);
+          var coord = "x=" + eventLocation.x + ", y=" + eventLocation.y;
+
+          // Get the data of the pixel according to the location generate by the getEventLocation function
+          var context = this.getContext("2d");
+          //   willReadFrequently
+          var pixelData = context.getImageData(
+            eventLocation.x,
+            eventLocation.y,
+            1,
+            1
+          ).data;
+
+          // If transparency on the image
+          if (
+            pixelData[0] == 0 &&
+            pixelData[1] == 0 &&
+            pixelData[2] == 0 &&
+            pixelData[3] == 0
+          ) {
+            coord +=
+              " (Transparent color detected, cannot be converted to HEX)";
+          }
+
+          // if is white
+          if (
+            pixelData[0] == 255 &&
+            pixelData[1] == 255 &&
+            pixelData[2] == 255
+          ) {
+            // console.log("x:" + x + "y:" + y + "", pixelData);
+            // fill black pixels
+            console.log("white");
+
+            setMapFromPosition(eventLocation.y, eventLocation.x, 100, 100, 0);
+          } else {
+            setMapFromPosition(eventLocation.y, eventLocation.x, 100, 100, 1);
+          }
+
+          var hex =
+            "#" +
+            (
+              "000000" + rgbToHex(pixelData[0], pixelData[1], pixelData[2])
+            ).slice(-6);
+
+          let hsv = hexToHSV(hex);
+
+          let coords = coordsToMapPosition(
+            eventLocation.x + 1,
+            eventLocation.y + 1
+          );
+          // Draw the color and coordinates.
+          document.getElementById(
+            "status"
+          ).innerHTML = `${coord} <br> ${hex} <br> ${JSON.stringify(
+            hsv
+          )} <br>-${JSON.stringify(coords)}-`;
+          document.getElementById("color").style.backgroundColor = hex;
+        },
+        false
+      );
+
+      window.addEventListener("load", function () {
+        function sendHSV(color) {
+          let hsv = hexToHSV(color);
+
+          // 1 = 255
+          // 0 = 0
+          h = Math.ceil(hsv.h * 180);
+          s = Math.ceil(hsv.s * 255);
+          v = Math.ceil(hsv.v * 255);
+          // convert to 0 - 255
+
+          pywebview.api.update_prop("polarRadar", "h_polarRadar", parseInt(h));
+          pywebview.api.update_prop("polarRadar", "s_polarRadar", parseInt(s));
+          pywebview.api.update_prop("polarRadar", "v_polarRadar", parseInt(v));
+        }
+        function getHSV(color) {
+          let hsv = hexToHSV(color);
+
+          // 1 = 255
+          // 0 = 0
+          h = Math.ceil(hsv.h * 180);
+          s = Math.ceil(hsv.s * 255);
+          v = Math.ceil(hsv.v * 255);
+          // convert to 0 - 255
+          return [h, s, v];
+        }
+
+        function setLowerUpperHSV(lower, upper, motif) {
+          let payload = { lower, upper };
+          pywebview.api.update_prop("floorRadar", motif, payload);
+        }
+
+        function randomFloat() {
+          var r;
+          switch (arguments.length) {
+            case 0:
+              r = Math.random();
+              break;
+            case 1:
+              r = Math.random() * arguments[0];
+              break;
+            case 2:
+              r = arguments[0] + (arguments[1] - arguments[0]) * Math.random();
+              break;
+          }
+          return r;
+        }
+
+        function frac(value) {
+          return value - Math.floor(value);
+        }
+
+        function saw(value) {
+          return 2 * (value - Math.floor(0.5 + value));
+        }
+
+        function tri(value) {
+          return 1 - 4 * Math.abs(0.5 - frac(0.5 * value + 0.25));
+        }
+
+        function rect(value) {
+          var a = Math.abs(value);
+          return a > 0.5 ? 0 : a == 0.5 ? 0.5 : a < 0.5 ? 1 : -1;
+        }
+
+        function stepSmooth(n) {
+          return n * n * (3 - 2 * n);
+        }
+
+        function stepSmoothSquared(n) {
+          return stepSmooth(n) * stepSmooth(n);
+        }
+
+        var object = {
+          string: "lorem ipsum",
+          stringPresets: ["hy", "well", "bummm"],
+          number: 26.0,
+          numberPresets: [10.0, 20.0, 345.0, 12.0],
+          range: [-1, 1],
+          bool: true,
+          slideValue: 0.1,
+          selectOptions: ["hello", "bello", "cello"],
+          selectTarget: "hello",
+          func0: function (x) {
+            return Math.sin(x);
+          },
+          func2: function (x) {
+            return x * x;
+          },
+          funcs: [
+            function (x) {
+              return Math.random() * Math.sin(x);
+            },
+            function (x) {
+              return stepSmooth(Math.sin(x));
+            },
+            function (x) {
+              return stepSmoothSquared(Math.sin(x));
+            },
+          ],
+          funcTarget: null,
+
+          xyValue: [0.25, -0.35],
+          changeValue0: 0.0,
+          changeValue1: 0.0,
+          changeValue2: 0.0,
+          changeValue3: 0.0,
+          changeValue4: 0.0,
+          changeValue5: 0.0,
+          changeValue6: 0.0,
+          xyChangeValue: [0.1, 0.1],
+          output: "",
+          slideValue0: 0.01,
+          slideValue1: 0.01,
+          slideValue2: 0.01,
+          slideValue3: 0.01,
+          slideValue4: 0.01,
+          slideValue5: 0.01,
+          slideValue6: 0.01,
+          slideValue7: 0.01,
+
+          implFunc0: function (x, y) {
+            return (
+              Math.cos(x * 8 + randomFloat(-1, 1) * this.xyValue[0] * 4) *
+              Math.sin(y * 8 + randomFloat(-1, 1) * this.xyValue[1] * 4)
+            );
+          },
+          implFunc1: function (x, y) {
+            return Math.pow(
+              Math.sin(
+                (x + randomFloat(-1, 1) * this.xyValue[0]) *
+                  (y + randomFloat(-1, 1) * this.xyValue[1]) *
+                  100
+              ),
+              8
+            );
+          },
+
+          selectColorOptions: ["#5b3f95", "#121212", "#B32435"],
+          selectColorTarget: null,
+          color0: "#5b3f95",
+          color1: "#ed4063",
+          color2: [1, 1, 1],
+        };
+
+        object.funcTarget = object.funcs[0];
+        object.selectColorTarget = object.selectColorOptions[0];
+
+        var controlKit = new ControlKit({ loadAndSave: true });
+
+        /*
+        controlKit
+          .addPanel({ label: "Panel 1 Left", align: "left", width: 200 })
+          .addSubGroup({ label: "SubGroup 1" })
+          .addNumberInput(object, "number", { label: "Num" })
+          .addNumberInput(object, "number", {
+            presets: object.numberPresets,
+            label: "Num/wP",
+          })
+          .addRange(object, "range")
+          .addSubGroup({ label: "SubGroup 2" })
+          .addStringInput(object, "string", { label: "Str" })
+          .addStringInput(object, "string", {
+            presets: object.stringPresets,
+            label: "Str/wP",
+          })
+          .addSubGroup()
+          .addSlider(object, "slideValue", "range", { label: "Slide" })
+          .addNumberInput(object, "slideValue");
+
+        controlKit
+          .addPanel({
+            label: "Panel 2 Left Floated",
+            width: 250,
+            align: "left",
+          })
+          .addGroup({ label: "Group 1" })
+          .addSubGroup({ label: "Sub Group 1" })
+          .addCheckbox(object, "bool", { label: "Bool" })
+          .addSelect(object, "selectOptions", {
+            label: "Select",
+            selectTarget: "selectTarget",
+          })
+          .addButton("Button")
+          .addSubGroup({ label: "Sub Group with Visual Comps", height: 150 })
+          .addValuePlotter(object, "changeValue0", {
+            height: 80,
+            label: "Val 0 x1",
+          })
+          .addValuePlotter(object, "changeValue1", {
+            height: 80,
+            label: "Val 1 x1",
+          })
+          .addValuePlotter(object, "changeValue2", {
+            height: 80,
+            label: "Val 2 x1",
+          })
+          .addValuePlotter(object, "changeValue3", {
+            height: 80,
+            label: "Val 3 x1",
+          })
+          .addSubGroup({ label: "Sub Group with Visual Comps" })
+          .addValuePlotter(object, "changeValue0", {
+            height: 30,
+            label: "Val 0 x2",
+            resolution: 2,
+          })
+          .addValuePlotter(object, "changeValue0", {
+            height: 30,
+            label: "Val 0 x4",
+            resolution: 4,
+            lineWidth: 4,
+            lineColor: [44, 123, 230],
+          })
+          .addValuePlotter(object, "changeValue0", {
+            height: 30,
+            label: "Val 0 x8",
+            resolution: 8,
+            lineWidth: 8,
+          })
+          .addValuePlotter(object, "changeValue0", {
+            height: 30,
+            label: "Val 0 x16",
+            resolution: 16,
+            lineWidth: 16,
+          });
+          */
+
+        let coords = {
+          value: [0, 0],
+        };
+
+        let lowerH = {
+          number: 0,
+          range: [0, 180],
+        };
+        let lowerS = {
+          number: 0,
+          range: [0, 255],
+        };
+        let lowerV = {
+          number: 0,
+          range: [0, 255],
+        };
+        let upperH = {
+          number: 0,
+          range: [0, 180],
+        };
+        let upperS = {
+          number: 0,
+          range: [0, 255],
+        };
+        let upperV = {
+          number: 0,
+          range: [0, 255],
+        };
+
+        let masks = [];
+        function updateColors(send = false) {
+          let lowerHex = hsvToHex(lowerH.number, lowerS.number, lowerV.number);
+          let upperHex = hsvToHex(upperH.number, upperS.number, upperV.number);
+
+          object.color0 = lowerHex;
+          object.color1 = upperHex;
+
+          controlKit.update();
+          if (send) {
+            // appendLowerUpperHSV(lowerHex, upperHex);
+            setLowerUpperHSV(
+              [
+                Math.floor(lowerH.number),
+                Math.floor(lowerS.number),
+                Math.floor(lowerV.number),
+              ],
+              [
+                Math.floor(upperH.number),
+                Math.floor(upperS.number),
+                Math.floor(upperV.number),
+              ],
+              "test"
+            );
+          }
+        }
+        controlKit
+          .addPanel({
+            label: "Panel 3 Left Floated",
+            align: "left",
+            width: 220,
+          })
+          .addGroup({ label: "PAD GROUP", enable: false })
+          .addPad(coords, "value", {
+            onChange: function () {
+              console.log("drag", coords);
+            },
+            onFinish: function () {
+              console.log("done", coords.value);
+            },
+          })
+
+          .addGroup({ label: "HSV FLOOR DETERMINIST", enable: false })
+          .addSlider(lowerH, "number", "range", {
+            label: "LOWER HUE",
+            onChange: function (value) {
+              console.log("slider 0", lowerH);
+              updateColors(true);
+            },
+          })
+          .addSlider(lowerS, "number", "range", {
+            label: "LOWER SATURATION",
+            onChange: function (value) {
+              console.log("slider 1", lowerS);
+              updateColors(true);
+            },
+          })
+          .addSlider(lowerV, "number", "range", {
+            label: "LOWER VALUE",
+            onChange: function (value) {
+              console.log("slider 2", lowerV);
+              updateColors(true);
+            },
+          })
+          .addSlider(upperH, "number", "range", {
+            label: "UPPER HUE",
+            onChange: function (value) {
+              console.log("slider 3", upperH);
+              updateColors(true);
+            },
+          })
+          .addSlider(upperS, "number", "range", {
+            label: "UPPER SATURATION",
+            onChange: function (value) {
+              console.log("slider 4", upperS);
+              updateColors(true);
+            },
+          })
+          .addSlider(upperV, "number", "range", {
+            label: "UPPER VALUE",
+            onChange: function (value) {
+              console.log("slider 5", upperV);
+              updateColors(true);
+            },
+          })
+          .addButton(
+            "test",
+            function () {
+              console.log(this);
+
+              updateColors(true);
+            },
+            {
+              label: "TEST FLOOR",
+            }
+          )
+
+          .addGroup({ label: "Group 1", enable: false })
+          .addSubGroup({ label: "Function Selection" })
+          .addFunctionPlotter(object, "funcTarget", { label: "none" })
+          .addSelect(object, "funcs", {
+            label: "Functions",
+            onChange: function (index) {
+              object.funcTarget = object.funcs[index];
+              console.log("function changed to", index);
+            },
+          })
+          .addSubGroup({ label: "Function Output" })
+          .addValuePlotter(object, "changeValue6", {
+            label: "none",
+            height: 100,
+          })
+          .addGroup({ label: "Group 2 - Constrained Height", enable: false })
+          .addSubGroup({ label: "Function List", height: 200 })
+          .addFunctionPlotter(object, "func0")
+          .addFunctionPlotter(object, "func2");
+
+        controlKit
+          .addPanel({
+            label: "Floating Color Panel",
+            align: "left",
+            fixed: false,
+            position: [650, 200],
+            width: 200,
+          })
+          .addSubGroup({ label: "System Colors", enable: false })
+          .addColor(object, "color0", {
+            onChange: (color) => {
+              console.log("color1", color);
+              sendHSV(color);
+            },
+          })
+
+          .addColor(object, "color1", {
+            onChange: (color) => {
+              console.log("color1", color);
+              sendHSV(color);
+            },
+          })
+          // .addColor(object, "color2", { colorMode: "rgbfv" })
+          // .addSubGroup({ label: "System Colors Compressed" })
+          // .addColor(object, "color0", { presets: "selectColorOptions" })
+          .addSubGroup({ label: "ADD / REMOVE" })
+          .addButton(
+            "add",
+            function () {
+              console.log(this);
+
+              let payload = {
+                lower: getHSV(object.color0),
+                upper: getHSV(object.color1),
+              };
+
+              console.log("payload", payload);
+
+              pywebview.api.update_prop("floorRadar", "add", payload);
+
+              masks.push(payload);
+
+              // if (this.getButtonLabel().toLowerCase() === "play") {
+              this.setButtonLabel("add_masks_" + masks.length);
+              // } else {
+              //   this.setButtonLabel("play");
+              // }
+            },
+            {
+              label: "Add",
+            }
+          )
+          .addButton(
+            "remove",
+            function () {
+              console.log(this);
+
+              // get the last mask added
+              if (masks.length === 0) {
+                return;
+              }
+              let payload = masks.pop();
+
+              pywebview.api.update_prop("floorRadar", "remove", payload);
+
+              // if (this.getButtonLabel().toLowerCase() === "play") {
+              this.setButtonLabel("rm_masks_" + masks.length);
+              // } else {
+              //   this.setButtonLabel("play");
+              // }
+            },
+            {
+              label: "Remove",
+            }
+          );
+
+        window.requestAnimationFrame =
+          window.requestAnimationFrame ||
+          window.mozRequestAnimationFrame ||
+          window.oRequestAnimationFrame ||
+          window.msRequestAnimationFrame;
+
+        var t = 0,
+          sint;
+
+        (function update() {
+          t += object.slideValue;
+
+          object.changeValue0 = Math.sin(t);
+
+          sint = Math.sin(t);
+
+          object.changeValue1 = tri(sint);
+          object.changeValue2 = rect(sint);
+          object.changeValue3 = saw(sint);
+
+          object.changeValue6 = object.funcTarget(sint);
+          controlKit.update();
+          requestAnimationFrame(update, null);
+        })();
+      });
+    </script>
+
+    <script>
+      /*************************************\
+   =====================================
+         ---------------------------
+                Wolfenstein JS
+         ---------------------------
+           Didactic implementation
+              
+                     by
+
+              Code Monkey King
+         ---------------------------
+   =====================================
+  \*************************************/
+
+      // init canvas
+      const canvasRayCast = document.getElementById("screen");
+      const context = canvasRayCast.getContext("2d");
+
+      // screen
+      const WIDTH = 300,
+        HALF_WIDTH = 150;
+      const HEIGHT = 200,
+        HALF_HEIGHT = 100;
+
+      // FPS
+      const FPS = 60;
+      const cycleDelay = Math.floor(1000 / FPS);
+      var oldCycleTime = 0;
+      var cycleCount = 0;
+      var fps_rate = "...";
+
+      // map
+      const MAP_SIZE = 48;
+      const MAP_SCALE = 64;
+      const MAP_RANGE = MAP_SCALE * MAP_SIZE;
+      const MAP_SPEED = MAP_SCALE / 2 / 10;
+      // window.map = [
+      //   1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
+      //   2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2,
+      //   2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0,
+      //   14, 0, 0, 0, 0, 0, 2, 14, 2, 0, 0, 0, 0, 0, 0, 0, 2, 14, 2, 0, 0, 0, 0,
+      //   2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 2,
+      //   14, 2, 0, 0, 0, 0, 0, 0, 0, 2, 14, 2, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0,
+      //   0, 0, 1, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 0, 0, 0,
+      //   0, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2,
+      //   2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 1, 1, 1, 1, 15, 0, 15, 1, 1, 1, 1, 15, 0,
+      //   15, 1, 1, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 2, 15, 0, 15, 2, 1, 0, 0, 0,
+      //   0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 0, 2,
+      //   2, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0,
+      //   0, 0, 2, 0, 0, 0, 0, 2, 2, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0,
+      //   0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 2, 0, 0, 2, 2, 2, 2, 0, 2, 2, 1, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 0,
+      //   0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0,
+      //   0, 0, 2, 0, 0, 2, 0, 0, 0, 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,
+      //   0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 2, 0, 0, 2, 0, 2, 2, 2, 2, 2, 1, 0, 0, 0,
+      //   0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 0, 0, 0,
+      //   0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1,
+      //   1, 1, 1, 1, 1, 1, 15, 0, 15, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 0, 0,
+      //   0, 1, 0, 0, 0, 1, 11, 11, 14, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1,
+      //   1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 12, 0, 0, 0, 0, 0, 1, 1, 0,
+      //   0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 11,
+      //   11, 14, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 1, 1,
+      //   15, 0, 15, 1, 15, 0, 15, 1, 1, 1, 15, 0, 15, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //   1, 1, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+      //   1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
+      //   1, 1, 1, 15, 0, 15, 1, 1, 1, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //   0, 8, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 0, 0, 0,
+      //   0, 1, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14, 3, 3, 3, 3, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 3, 0, 0, 14, 0, 0, 0, 0, 0, 0, 0, 1, 6, 0, 0, 0, 0, 0,
+      //   0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 14, 3, 3, 0, 3, 0, 0, 1, 0, 0, 0, 1, 15,
+      //   0, 15, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8, 1, 0, 3, 0, 3,
+      //   3, 3, 3, 3, 3, 3, 3, 3, 0, 3, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      //   0, 0, 1, 1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 1, 1, 1, 1, 7,
+      //   1, 6, 1, 9, 1, 6, 1, 7, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+      //   3, 3, 1,
+      // ];
+
+      var showMap = true;
+      var initialRotation = 180;
+
+      function degreeToRadian(degree) {
+        return (degree * Math.PI) / 180;
+      }
+
+      function radianToDegree(radian) {
+        return (radian * 180) / Math.PI;
+      }
+      function distanceFromPointToPoint(x1, y1, x2, y2) {
+        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+      }
+
+      function setMapFromPosition(x, y, maxX, maxY, value) {
+        const relX = Math.floor((x / maxX) * MAP_SIZE);
+        const relY = Math.floor((y / maxY) * MAP_SIZE);
+        const id = relX * MAP_SIZE + relY;
+
+        window.map[id] = value;
+      }
+
+      function coordsToMapPosition(x, y) {
+        const maxX = 99;
+        const maxY = 99;
+
+        const relX = Math.floor((x / maxX) * 48);
+        const relY = Math.floor((y / maxY) * 48);
+        const id = relX * MAP_SIZE + relY;
+
+        return `${window.map[id]}-[${id}]-${relX},${relY}`;
+        // iterate over map
+        // for (var i = 0; i < MAP_SIZE; i++) {
+        //   for (var j = 0; j < MAP_SIZE; j++) {
+        //     if (window.map[i * MAP_SIZE + j] == 1) {
+        //       context.fillStyle = "black";
+        //       context.fillRect(j * MAP_SCALE, i * MAP_SCALE, MAP_SCALE, MAP_SCALE);
+        //     } else {
+        //       context.fillStyle = "white";
+        //       context.fillRect(j * MAP_SCALE, i * MAP_SCALE, MAP_SCALE, MAP_SCALE);
+        //     }
+        //   }
+        // }
+      }
+
+      // player
+      var playerX = MAP_RANGE / 2 + 20;
+      var playerY = MAP_RANGE / 2 + 20;
+      window.playerAngle = degreeToRadian(initialRotation);
+      var playerMoveX = 0;
+      var playerMoveY = 0;
+      var playerMoveAngle = 0;
+
+      // handle user input
+      document.onkeydown = function (event) {
+        switch (event.keyCode) {
+          case 38:
+            playerMoveX = 1;
+            playerMoveY = 1;
+            break; /* arrow up               */
+          case 40:
+            playerMoveX = -1;
+            playerMoveY = -1;
+            break; /* arrow down             */
+          case 37:
+            playerMoveAngle = 1;
+            break; /* arrow left             */
+          case 39:
+            playerMoveAngle = -1;
+            break; /* arrow right            */
+          case 16:
+            showMap = true;
+            break; /* left shift (show map)  */
+
+          // space bar
+          case 32:
+            // reset player
+            playerX = MAP_RANGE / 2 + 20;
+            playerY = MAP_RANGE / 2 + 20;
+            window.playerAngle = degreeToRadian(initialRotation);
+            playerMoveX = 0;
+            playerMoveY = 0;
+            playerMoveAngle = 0;
+            break;
+        }
+      };
+
+      document.onkeyup = function (event) {
+        switch (event.keyCode) {
+          case 38:
+          case 40:
+            playerMoveX = 0;
+            playerMoveY = 0;
+            break;
+          case 37:
+          case 39:
+            playerMoveAngle = 0;
+            break;
+          case 16:
+            showMap = false;
+            break;
+        }
+      };
+
+      // camera
+      const DOUBLE_PI = 2 * Math.PI;
+      const FOV = Math.PI / 3;
+      const HALF_FOV = FOV / 2;
+      const STEP_ANGLE = FOV / WIDTH;
+
+      // graphics
+      const WALLS = [];
+
+      // load wall textures
+      for (var filename = 0; filename < 14; filename++) {
+        var image = document.createElement("img");
+        image.src = "textures/" + filename + ".png";
+        WALLS.push(image);
+      }
+
+      // game loop
+      function gameLoop() {
+        // calculate FPS
+        cycleCount++;
+        if (cycleCount >= 60) cycleCount = 0;
+        var startTime = Date.now();
+        var cycleTime = startTime - oldCycleTime;
+        oldCycleTime = startTime;
+        if (cycleCount % 60 == 0) fps_rate = Math.floor(1000 / cycleTime);
+
+        // resize canvasRayCast
+        canvasRayCast.width = window.innerWidth * 0.3;
+        canvasRayCast.height = window.innerHeight * 0.3;
+
+        // update player position
+        var playerOffsetX = Math.sin(window.playerAngle) * MAP_SPEED;
+        var playerOffsetY = Math.cos(window.playerAngle) * MAP_SPEED;
+        var mapTargetX =
+          Math.floor(playerY / MAP_SCALE) * MAP_SIZE +
+          Math.floor((playerX + playerOffsetX * playerMoveX * 10) / MAP_SCALE);
+        var mapTargetY =
+          Math.floor((playerY + playerOffsetY * playerMoveY * 10) / MAP_SCALE) *
+            MAP_SIZE +
+          Math.floor(playerX / MAP_SCALE);
+
+        if (playerMoveX && window.map[mapTargetX] == 0)
+          playerX += playerOffsetX * playerMoveX;
+        if (playerMoveY && window.map[mapTargetY] == 0)
+          playerY += playerOffsetY * playerMoveY;
+        if (playerMoveAngle) window.playerAngle += 0.03 * playerMoveAngle;
+
+        // calculate map & player offsets
+        let miniMapScale = 3;
+        var mapOffsetX = Math.floor(canvasRayCast.width / 2) - HALF_WIDTH;
+        var mapOffsetY = Math.floor(canvasRayCast.height / 2) - HALF_HEIGHT;
+        var playerMapX = (playerX / MAP_SCALE) * miniMapScale + mapOffsetX;
+        var playerMapY = (playerY / MAP_SCALE) * miniMapScale + mapOffsetY;
+
+        // draw floor and ceiling
+        context.drawImage(
+          WALLS[0],
+          canvasRayCast.width / 2 - HALF_WIDTH,
+          canvasRayCast.height / 2 - HALF_HEIGHT
+        );
+
+        // raycasting
+        var currentAngle = window.playerAngle + HALF_FOV;
+        var rayStartX = Math.floor(playerX / MAP_SCALE) * MAP_SCALE;
+        var rayStartY = Math.floor(playerY / MAP_SCALE) * MAP_SCALE;
+
+        // loop over casted rays
+        for (var ray = 0; ray < WIDTH; ray++) {
+          // get current angle sin & cos
+          var currentSin = Math.sin(currentAngle);
+          currentSin = currentSin ? currentSin : 0.000001;
+          var currentCos = Math.cos(currentAngle);
+          currentCos = currentCos ? currentCos : 0.000001;
+
+          // vertical line intersection
+          var rayEndX,
+            rayEndY,
+            rayDirectionX,
+            verticalDepth,
+            textureEndY,
+            textureY;
+          if (currentSin > 0) {
+            rayEndX = rayStartX + MAP_SCALE;
+            rayDirectionX = 1;
+          } else {
+            rayEndX = rayStartX;
+            rayDirectionX = -1;
+          }
+          for (var offset = 0; offset < MAP_RANGE; offset += MAP_SCALE) {
+            verticalDepth = (rayEndX - playerX) / currentSin;
+            rayEndY = playerY + verticalDepth * currentCos;
+            var mapTargetX = Math.floor(rayEndX / MAP_SCALE);
+            var mapTargetY = Math.floor(rayEndY / MAP_SCALE);
+            if (currentSin <= 0) mapTargetX += rayDirectionX;
+            var targetSquare = mapTargetY * MAP_SIZE + mapTargetX;
+            if (targetSquare < 0 || targetSquare > map.length - 1) break;
+            if (window.map[targetSquare] != 0) {
+              textureY = window.map[targetSquare];
+              if (window.map[targetSquare] == 14) textureY = 1;
+              if (window.map[targetSquare] == 15) textureY = 5;
+              break;
+            }
+            rayEndX += rayDirectionX * MAP_SCALE;
+          }
+          textureEndY = rayEndY;
+
+          // vertical line intersection
+          var rayEndY,
+            rayEndX,
+            rayDirectionY,
+            horizontalDepth,
+            textureEndX,
+            textureX;
+          if (currentCos > 0) {
+            rayEndY = rayStartY + MAP_SCALE;
+            rayDirectionY = 1;
+          } else {
+            rayEndY = rayStartY;
+            rayDirectionY = -1;
+          }
+          for (var offset = 0; offset < MAP_RANGE; offset += MAP_SCALE) {
+            horizontalDepth = (rayEndY - playerY) / currentCos;
+            rayEndX = playerX + horizontalDepth * currentSin;
+            var mapTargetX = Math.floor(rayEndX / MAP_SCALE);
+            var mapTargetY = Math.floor(rayEndY / MAP_SCALE);
+            if (currentCos <= 0) mapTargetY += rayDirectionY;
+            var targetSquare = mapTargetY * MAP_SIZE + mapTargetX;
+            if (targetSquare < 0 || targetSquare > map.length - 1) break;
+            if (window.map[targetSquare] != 0) {
+              textureX = window.map[targetSquare];
+              if (window.map[targetSquare] == 14) textureX = 5;
+              if (window.map[targetSquare] == 15) textureX = 1;
+              break;
+            }
+            rayEndY += rayDirectionY * MAP_SCALE;
+          }
+          textureEndX = rayEndX;
+
+          // calculate 3D projection
+          var depth =
+            verticalDepth < horizontalDepth ? verticalDepth : horizontalDepth;
+          var textureImage =
+            verticalDepth < horizontalDepth ? textureY : textureX;
+          var textureOffset =
+            verticalDepth < horizontalDepth ? textureEndY : textureEndX;
+          textureOffset = Math.floor(
+            textureOffset - Math.floor(textureOffset / MAP_SCALE) * MAP_SCALE
+          );
+          depth *= Math.cos(window.playerAngle - currentAngle);
+          var wallHeight = Math.min(
+            Math.floor((MAP_SCALE * 280) / (depth + 0.0001)),
+            50000
+          );
+
+          // render textures
+          try {
+            var text = textureImage;
+            if (textureImage > 13) text = 1;
+            context.drawImage(
+              WALLS[text],
+              textureOffset /* source image X offset */,
+              0 /* source image Y offset */,
+              1 /* source image width    */,
+              64 /* source image height   */,
+              mapOffsetX + ray /* target image X offset */,
+              mapOffsetY +
+                (HALF_HEIGHT -
+                  Math.floor(wallHeight / 2)) /* target image Y offset */,
+              1 /* target image width    */,
+              wallHeight /* target image height   */
+            );
+          } catch (e) {
+            console.log(e);
+          }
+
+          // update current angle
+          currentAngle -= STEP_ANGLE;
+        }
+
+        // draw map on left shift press
+        if (showMap) {
+          let distances = [];
+          // clear map
+          context.fillStyle = "#ffcc00";
+          context.fillRect(
+            mapOffsetX,
+            mapOffsetY,
+            MAP_SIZE * miniMapScale,
+            MAP_SIZE * miniMapScale
+          );
+
+          // draw 2D map
+          for (let row = 0; row < MAP_SIZE; row++) {
+            for (let col = 0; col < MAP_SIZE; col++) {
+              const square = row * MAP_SIZE + col;
+              context.fillStyle = "#C0C0C0";
+              context.fillRect(
+                mapOffsetX + col * miniMapScale,
+                mapOffsetY + row * miniMapScale,
+                miniMapScale,
+                miniMapScale
+              );
+              if (window.map[square] != 0) {
+                // calculate dist from player
+                const dist = distanceFromPointToPoint(
+                  MAP_RANGE / 2,
+                  MAP_RANGE / 2,
+                  col * MAP_SCALE,
+                  row * MAP_SCALE
+                );
+                distances.push({ dist, square, row, col });
+
+                // draw walls
+
+                const materialTexture =
+                  window.map[square] > 13 ? 1 : window.map[square];
+                context.drawImage(
+                  WALLS[materialTexture],
+                  0,
+                  0,
+                  MAP_SCALE / 2,
+                  MAP_SCALE / 2,
+                  mapOffsetX + col * miniMapScale,
+                  mapOffsetY + row * miniMapScale,
+                  miniMapScale,
+                  miniMapScale
+                );
+
+                // sort by dist
+                distances.sort((a, b) => a.dist - b.dist);
+                let lineCoords = distances[0];
+                // draw line from center
+
+                context.beginPath();
+                context.moveTo(playerMapX, playerMapY);
+                context.lineTo(
+                  mapOffsetX + lineCoords.col * miniMapScale,
+                  mapOffsetY + lineCoords.row * miniMapScale
+                );
+                context.strokeStyle = "rgba(255, 0, 0, 0.5)";
+                context.stroke();
+              }
+            }
+          }
+
+          // draw player on 2D map
+          context.fillStyle = "Blue";
+          context.beginPath();
+          context.arc(playerMapX, playerMapY, 2, 0, DOUBLE_PI);
+          context.fill();
+          context.strokeStyle = "Blue";
+          context.lineWidht = 1;
+          context.beginPath();
+          context.moveTo(playerMapX, playerMapY);
+          context.lineTo(
+            playerMapX + Math.sin(window.playerAngle) * miniMapScale,
+            playerMapY + Math.cos(window.playerAngle) * miniMapScale
+          );
+          context.stroke();
+        }
+
+        // fix wall layout
+        context.fillStyle = "White";
+        context.fillRect(0, 0, canvasRayCast.width, mapOffsetY);
+        context.fillRect(
+          0,
+          mapOffsetY + 200,
+          canvasRayCast.width,
+          canvasRayCast.width - mapOffsetY + 200
+        );
+
+        // infinite loop
+        setTimeout(gameLoop, cycleDelay);
+
+        // render FPS to screen
+        context.fillStyle = "Black";
+        context.font = "10px Monospace";
+        context.fillText("FPS: " + fps_rate, 0, 20);
+      }
+      window.onload = function () {
+        gameLoop();
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Frame Header -->
+  <head>
+    <!-- Meta tags  -->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <title>Guide Play</title>
+    <link rel="icon" type="image/png" href="images/favicon.png" />
+
+    <!-- CSS Assets -->
+    <link rel="stylesheet" href="css/app.css" />
+
+    <!-- Javascript Assets -->
+    <script src="js/app.js" defer></script>
+    <script src="js/tailwind.js" defer></script>
+    <script src="js/lottie-player.js"></script>
+    <script src="js/htmx.min.js"></script>
+    <script src="js/postme.js"></script>
+    <script src="js/radarFunctions.js"></script>
+    <script src="js/entities.js"></script>
+    <!-- Fonts -->
+
+    <script>
+      /**
+       * THIS SCRIPT REQUIRED FOR PREVENT FLICKERING IN SOME BROWSERS
+       */
+      // localStorage.getItem("_x_darkMode_on") === "true" &&
+
+      // disable keypress f12
+      document.addEventListener("keydown", (event) => {
+        if (event.keyCode === 123) {
+          event.preventDefault();
+        }
+      });
+
+      // disable right mouse click
+      document.addEventListener("contextmenu", (event) =>
+        event.preventDefault()
+      );
+      window.addEventListener("load", () => {
+        document.body.classList.add("loaded");
+        document.addEventListener("contextmenu", (event) =>
+          event.preventDefault()
+        );
+      });
+
+      window.logEnabled = true;
+      document.documentElement.classList.add("dark");
+      window.showLog = (...args) => {
+        if (window.logEnabled) {
+          console.log(...args);
+        }
+      };
+    </script>
+    <style>
+      html,
+      body {
+        background-color: black;
+      }
+
+      .pywebview-drag-region {
+        -webkit-app-region: drag;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        z-index: 999999;
+      }
+      .font-mono {
+        font-family: monospace;
+        color: #8a8a8a;
+      }
+    </style>
+  </head>
+
+  <body
+    x-data
+    x-bind="$store.global.documentBody"
+    style="background-color: black"
+    class="is-header-blur"
+  >
+    <!-- window handlers TOP -->
+    <div class="pywebview-drag-region" id="wintophandlers"></div>
+
+    <script>
+      // get url Params
+      const urlParams = new URLSearchParams(window.location.search);
+      const devMode = urlParams.get("devMode");
+      const devModeEnabled =
+        devMode ? devMode.toLocaleLowerCase() === "true" : false;
+
+      const initialState = {
+        openDropTest: false,
+        datamodel: [],
+        wavs: [],
+        inputStates: {},
+        gamestate: "guideplay-ui",
+        serviceStates: {
+          "cv-fullcapture": false,
+          "cv-radar": false,
+          "cv-damage": false,
+          "cv-obstacles": false,
+          "cv-cardinal": false,
+          "cv-theremin": false,
+          "cv-aim": false,
+        },
+        currentTab: "AUDIO SETTINGS",
+        tabs: [],
+        tabIndexSub: 0,
+        tabRootIndex: 0,
+        tabIndexSubItem: 0,
+        tabLocked: false,
+        aboutSelected: false,
+        modalLocked: true,
+        showModal: false,
+        devMode: devModeEnabled,
+      };
+
+      window.services = {};
+
+      window.addEventListener("DOMContentLoaded", () => {
+        window.showLog("STARTING ALPINE");
+
+        setTimeout(() => {
+          window.setStateJSON(initialState);
+          Alpine.start();
+        }, 200);
+        // pywebview.api.syncState("bootUp", "true");
+        setTimeout(() => {
+          document.querySelector(".app-preloader").remove();
+        }, 1000);
+      });
+
+      window.setTab = (e, tab) => {
+        const current = window.Alpine.store("global")["tabRootIndex"];
+        if (current === tab) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        // const newTabIndexSub = tab.split("-")[0];
+        // const newTabIndexSubItem = tab.split("-")[1];
+
+        // const currentTabIndexSub = window.Alpine.store("global")["tabIndexSub"];
+        // const currentTabIndexSubItem =
+        //   window.Alpine.store("global")["tabIndexSubItem"];
+
+        // if (
+        //   newTabIndexSub == currentTabIndexSub &&
+        //   newTabIndexSubItem == currentTabIndexSubItem
+        // ) {
+        //   e.preventDefault();
+        //   e.stopPropagation();
+        //   return;
+        // }
+        window.showLog("SETTING_TAB", tab);
+        pywebview.api.syncState("tabIndex", tab);
+      };
+      window.changeTab = (tab) => {
+        window.showLog("CHANGING_TAB", tab);
+        const tabIndex = window.Alpine.store("global")["tabs"].indexOf(tab);
+        pywebview.api.syncState("menuTab", tab);
+        pywebview.api.syncState("rootTabIndex", tabIndex);
+
+        window.setState("tabIndexSub", 0);
+        window.setState("tabIndexSubItem", 0);
+        pywebview.api.updateSubItemTab(
+          window.Alpine.store("global")["currentTab"],
+          "reset"
+        );
+        window.updateMenuItemProps(tab);
+        // set focus
+        window.setState("tabLocked", true);
+        window.setTimeout(() => {
+          // document.getElementById("menu-" + tab).focus();
+          window.setState("tabLocked", false);
+        }, 500);
+
+        // window.Alpine.store('global')["currentTab"] = tab
+      };
+      window.cycleTab = (direction) => {
+        window.showLog("CYCLING_TAB", direction);
+        const tabs = window.Alpine.store("global")["tabs"];
+        const currentTab = window.Alpine.store("global")["currentTab"];
+        const currentIndex = tabs.indexOf(currentTab);
+        if (direction === "prev") {
+          const prevIndex =
+            currentIndex - 1 < 0 ? tabs.length - 1 : currentIndex - 1;
+          window.showLog("PREV_INDEX", prevIndex);
+          window.changeTab(tabs[prevIndex]);
+          // set focus
+
+          window.setState("tabLocked", true);
+          window.setTimeout(() => {
+            document.getElementById("menu-" + tabs[prevIndex]).focus();
+            window.setState("tabLocked", false);
+          }, 500);
+          return;
+        }
+        if (window.Alpine.store("global")["tabLocked"]) {
+          // window.setState("tabLocked", false)
+          return;
+        }
+        const nextIndex =
+          currentIndex + 1 >= tabs.length ? 0 : currentIndex + 1;
+        window.showLog("NEXT_INDEX", nextIndex);
+        window.changeTab(tabs[nextIndex]);
+        window.setTimeout(() => {
+          document.getElementById("menu-" + tabs[nextIndex]).focus();
+        }, 500);
+      };
+      window.updateMenuItemProps = (id) => {
+        window.showLog("UPDATING_MENU_ITEM_PROPS", "menu-" + id);
+
+        if (document.getElementById("menu-" + id) === null) {
+          return;
+        }
+
+        window.Alpine.store("global")
+          ["tabs"].filter((tab) => tab !== id)
+          .forEach((tab) => {
+            const el = document.getElementById("menu-" + tab);
+
+            if (el === null) {
+              return;
+            }
+
+            el.removeAttribute("activated");
+            el.setAttribute("role", "presentation");
+            el.setAttribute("tabIndex", "-1");
+          });
+
+        document
+          .getElementById("menu-" + id)
+          .setAttribute(
+            "activated",
+            window.Alpine.store("global")["currentTab"]
+          );
+        document.getElementById("menu-" + id).setAttribute("role", "button");
+        document.getElementById("menu-" + id).setAttribute("tabIndex", "0");
+      };
+      window.getRole = (tab, type) => {
+        if (type == "role") {
+          return tab == window.Alpine.store("global")["currentTab"]
+            ? "button"
+            : "presentation";
+        }
+        if (type == "tabIndex") {
+          return tab == window.Alpine.store("global")["currentTab"]
+            ? "0"
+            : "-1";
+        }
+        if (type == "activate") {
+          return tab == window.Alpine.store("global")["currentTab"]
+            ? window.Alpine.store("global")["currentTab"]
+            : "null";
+        }
+      };
+      window.cycleSubItem = (e, direction) => {
+        if (window.Alpine.store("global")["tabLocked"]) {
+          e.preventDefault();
+          e.stopPropagation();
+          return;
+        }
+        window.showLog("CYCLING_SUBITEM", e, direction);
+        // const element = document.activeElement;
+        // window.showLog("ACTIVE ELEMENT", element.tagName);
+        // if (element.tagName == "LI") {
+        //   window.showLog(
+        //     "ACTIVE ELEMENT ACTIVATED",
+        //     element.getAttribute("activated")
+        //   );
+
+        // if (
+        //   element.getAttribute("activated") &&
+        //   element.getAttribute("activated") ===
+        //     window.Alpine.store("global")["currentTab"]
+        // ) {
+        // e.preventDefault();
+        // e.stopPropagation();
+        window.showLog("CYCLING_SUBITEM_PYTHON", e, direction);
+
+        window.setState("tabLocked", true);
+        window.setTimeout(() => {
+          window.setState("tabLocked", false);
+        }, 500);
+        pywebview.api.updateSubItemTab(
+          window.Alpine.store("global")["currentTab"],
+          direction
+        );
+        // }
+      };
+      // };
+      window.treatValue = (value, type) => {
+        window.showLog("TREATING_VALUE", value, type);
+        if (value && value.length > 0 && type == "wav") {
+          let wavs = window.Alpine.store("global")["wavs"];
+          let index = wavs.findIndex((item) => item.file === value);
+          if (index >= 0) {
+            // return wavs[index].name;
+            return `Sound ${index + 1}`;
+          }
+          return value.split(".")[0] || value;
+        }
+        return value;
+      };
+
+      window.toggleCombo = (id) => {
+        const toggled =
+          !window.Alpine.store("global")["inputStates"]["" + id + ""];
+        window.Alpine.store("global")["inputStates"]["" + id + ""] = toggled;
+        window.showLog("TOGGLING_COMBO", id, toggled);
+      };
+      // set state on store
+      window.setState = (key, value) => {
+        newValue = value;
+
+        if (key == "devMode") {
+          window.showLog("DEV_MODE", value);
+          window.Alpine.store("global")["devMode"] = value;
+          return;
+        }
+
+        if (key == "lockModal") {
+          window.showLog("LOCK_MODAL", value);
+          window.Alpine.store("global")["modalLocked"] = true;
+          return;
+        }
+        if (key == "unlockModal") {
+          window.showLog("UNLOCK_MODAL", value);
+          window.Alpine.store("global")["modalLocked"] = false;
+          return;
+        }
+
+        if (key == "showModal") {
+          window.showLog("SHOW_MODAL", value);
+          window.Alpine.store("global")[key] = true;
+          window.Alpine.store("global")["modalLocked"] = true;
+          return;
+        }
+        if (key == "hideModal") {
+          window.showLog("SHOW_MODAL", value);
+
+          window.Alpine.store("global")["modalLocked"] = false;
+
+          if (document.getElementById("fake-modal-close")) {
+            document.getElementById("fake-modal-close").click();
+          }
+          window.Alpine.store("global")[key] = false;
+          return;
+        }
+        if (key == "notification") {
+          $notification({ content: "#custom-html-notif", duration: 6000 }),
+            pywebview.api.notidata();
+          return;
+        }
+
+        if (key === "wavs" && typeof value === "string" && value.length > 0) {
+          newValue = JSON.parse(value).map((item, index) => {
+            return {
+              // name: item.split(".")[0],
+              name: `Sound ${index + 1}`,
+              file: item,
+            };
+          });
+        }
+
+        if (key === "tabs" && typeof value === "string" && value.length > 0) {
+          newValue = JSON.parse(value);
+        }
+        if (
+          key === "tabIndexSub" ||
+          key == "tabIndexSubItem" ||
+          key == "tabRootIndex"
+        ) {
+          window.showLog("FIRE_SETTING_TAB_INDEX", key, value);
+
+          if (key == "tabRootIndex") {
+            // find element by index and scroll to it
+            const elementsList = window.generateTabsIndex();
+            const element = elementsList.find(
+              (item) => item.index === parseInt(value)
+            );
+            if (element) {
+              window.showLog("ELEMENT_FOUND", key, value, element);
+
+              document.getElementById(element.id).scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+              });
+
+              // element.element.scrollIntoView({
+              //   behavior: "smooth",
+              //   block: "center",
+              //   inline: "nearest",
+              // });
+
+              setTimeout(() => {
+                document.getElementById(element.id).focus();
+              }, 300);
+            } else {
+              window.showLog("ELEMENT_NOT_FOUND", key, value);
+            }
+          }
+          // // document.getElementById("content-frame").scrollTo(0, 200, true)
+          // if (
+          //   key === "tabIndexSub" &&
+          //   document.getElementById("audioItem-" + value)
+          // ) {
+          //   document.getElementById("audioItem-" + value).scrollIntoView({
+          //     behavior: "smooth",
+          //     block: "center",
+          //     inline: "nearest",
+          //   });
+          // }
+          // if (
+          //   key === "tabIndexSubItem" &&
+          //   document.getElementById(
+          //     "audioSubItem-" +
+          //       window.Alpine.store("global")["tabIndexSub"] +
+          //       "-" +
+          //       value +
+          //       ""
+          //   )
+          // ) {
+          //   document
+          //     .getElementById(
+          //       "audioSubItem-" +
+          //         window.Alpine.store("global")["tabIndexSub"] +
+          //         "-" +
+          //         value +
+          //         ""
+          //     )
+          //     .scrollIntoView({
+          //       behavior: "smooth",
+          //       block: "center",
+          //       inline: "nearest",
+          //     });
+          // }
+
+          newValue = parseInt(value);
+        }
+
+        window.showLog("SETTING_STATE", key, newValue);
+        window.Alpine.store("global")[key] = newValue;
+      };
+      window.checkConfigByKey = (key, subkey) => {
+        if (window.Alpine.store("global")["datamodel"]) {
+          const configItem = window.Alpine.store("global")["datamodel"].find(
+            (item) => item.id === key
+          );
+          if (configItem) {
+            const subItem = configItem.subitems.find(
+              (subitem) => subitem.id === subkey
+            );
+            if (subItem && subItem.value === "on") {
+              return true;
+            } else if (subItem && subItem.value === "off") {
+              return false;
+            } else {
+              return subItem.value;
+            }
+          } else {
+            return ["not-found-1", key, subkey];
+          }
+        } else {
+          return ["not-found-2", key, subkey];
+        }
+      };
+
+      window.generateTabsIndex = (refresh = false) => {
+        if (!refresh && window.cachedIndexes) {
+          return window.cachedIndexes;
+        }
+
+        let indexes = [];
+        document.querySelectorAll(".tabbed").forEach((item) => {
+          // get in line styles
+          let styles = window.getComputedStyle(item);
+          // check if display none
+          let classes = styles.getPropertyValue("display");
+          // if no display none
+          if (!classes.includes("none")) {
+            indexes.push({
+              index: parseInt(item.getAttribute("index")),
+              id: item.getAttribute("id"),
+              element: item,
+            });
+          }
+        });
+
+        // sorte indexes
+        indexes.sort((a, b) => a.index - b.index);
+
+        window.showLog("INDEXES", indexes);
+        window.cachedIndexes = indexes;
+
+        return indexes;
+      };
+      window.setStateJSON = (json, key) => {
+        let model = json;
+        // window.showLog("setStateJSON", key, model);
+
+        if (key && key === "gamestate") {
+          const extras = json.extras;
+          // window.showLog("setStateJSON_GAMESTATE", extras);
+
+          window.Alpine.store("global")["gamestate"] =
+            json.gamestate || "unknown-ui";
+
+          let element = document.getElementById("gameStateSlot");
+          let elementContainer = document.getElementById(
+            "gameplay-details-container"
+          );
+          if (element) {
+            element.innerHTML = "";
+            element.innerHTML = json.gamestate || "unknown-ui";
+          }
+          if (elementContainer) {
+            elementContainer.innerHTML = "";
+            elementContainer.innerHTML = Object.keys(extras)
+              .map((Subkey) => {
+                return `<div class="flex flex-col gameplay-details-item font-mono text-gray-600">
+                          <div class="w-full flex flex-wrap">
+                            <div class="gameplay-details-item-Subkey pr-2 font-bold">${Subkey}</div>
+                            <div class="gameplay-details-item-value">${extras[Subkey]}</div>
+                          </div>
+                        </div>`;
+              })
+              .join("");
+          }
+
+          return;
+        }
+
+        if (key && key === "roundstate") {
+          const extras = json.extras;
+          // window.showLog("setStateJSON_ROUNDSTATE", extras);
+
+          window.Alpine.store("global")["roundstate"] =
+            json.roundstate || "unknown-ui";
+
+          let element = document.getElementById("roundStateSlot");
+          let elementContainer = document.getElementById(
+            "roundplay-details-container"
+          );
+          if (element) {
+            element.innerHTML = "";
+            element.innerHTML = json.roundstate || "unknown-ui";
+          }
+          if (elementContainer) {
+            elementContainer.innerHTML = "";
+            elementContainer.innerHTML = Object.keys(extras)
+              .map((Subkey) => {
+                let value = extras[Subkey];
+
+                if (
+                  Subkey === "lastDamageAngle" &&
+                  value !== "0" &&
+                  value !== null &&
+                  value !== undefined
+                ) {
+                  // {
+                  //     "name": "top",
+                  //     "angle": 0,
+                  //     "whitePixels": 2531,
+                  //     "percentage": 1,
+                  //     "class": "damage",
+                  //     "id": "top",
+                  //     "uniqueId": "top",
+                  //     "w": 20,
+                  //     "h": 20,
+                  //     "x": 0,
+                  //     "y": 500,
+                  //     "px": 0,
+                  //     "py": 500,
+                  //     "closest": false,
+                  //     "index": -1,
+                  //     "dist": 500,
+                  //     "silence": -1,
+                  //     "angleP": 0,
+                  //     "timestamp": 1706633221219
+                  // }
+                  if (value.timestamp && value.timestamp > 0) {
+                    const now = new Date().getTime();
+                    const diff = now - value.timestamp;
+                    if (diff < 1000) {
+                      const refKey = `cv-damage-damage`;
+                      // check if emission is enable on datamodel
+
+                      const isDamageAlertEnabled = window.checkConfigByKey(
+                        "IncomingDamageDirection",
+                        "DamageDirectionAlerts"
+                      );
+
+                      if (
+                        isDamageAlertEnabled &&
+                        window.services[refKey] &&
+                        window.services[refKey]["updater"]
+                      ) {
+                        window.services[refKey]["remoteHandle"].call(
+                          "updateRadarEmitter",
+                          JSON.stringify(value)
+                        );
+                        // window.showLog("AIM_DAMAGE_RECEIVED_____", value);
+                      } else {
+                        // window.showLog("AIM_DAMAGE_NOTFOUND", refKey);
+                      }
+
+                      const date = new Date(value.timestamp);
+                      const format = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
+
+                      value = `x_${value.x}_y${value.y}_a${value.angle}° @ ${format}`;
+                    } else {
+                      value = "damage-expired";
+                    }
+                  }
+                }
+                return `<div class="flex flex-col roundplay-details-item font-mono text-gray-600">
+                          <div class="w-full flex flex-wrap">
+                            <div class="roundplay-details-item-Subkey pr-2 font-bold">${Subkey}</div>
+                            <div class="roundplay-details-item-value">${value}</div>
+                          </div>
+                        </div>`;
+              })
+              .join("");
+          }
+
+          return;
+        }
+
+        if (key && key === "aim") {
+          model = JSON.stringify(json);
+          // already stringified
+
+          const isAimEnabled = window.checkConfigByKey(
+            "AimAlerts",
+            "AimAlertsAlerts"
+          );
+
+          if (!isAimEnabled) {
+            // window.showLog("AIM_REJECTING", isAimEnabled);
+            return;
+          }
+
+          if (
+            window.services["aim-enemy"] &&
+            window.services["aim-enemy"]["updater"]
+          ) {
+            window.services["aim-enemy"]["remoteHandle"].call(
+              "updateAimEmitter",
+              model
+            );
+          }
+          return;
+        }
+
+        if (key && key === "aimplus") {
+          model = JSON.stringify(json);
+          // already stringified
+
+          const isAimEnabled = window.checkConfigByKey(
+            "AimAlerts",
+            "AimAlertsAlerts"
+          );
+
+          if (!isAimEnabled) {
+            // window.showLog("AIM_REJECTING", isAimEnabled);
+            return;
+          }
+
+          if (
+            window.services["aim-plus"] &&
+            window.services["aim-plus"]["updater"]
+          ) {
+            window.services["aim-plus"]["remoteHandle"].call(
+              "updateAimEmitter",
+              model
+            );
+          }
+          return;
+        }
+
+        if (key && key === "aim_damage") {
+          model = json;
+
+          const refKey = `cv-damage-damage`;
+          // check if emission is enable on datamodel
+
+          const isDamageAlertEnabled = window.checkConfigByKey(
+            "IncomingDamageDirection",
+            "DamageDirectionAlerts"
+          );
+
+          if (!isDamageAlertEnabled) {
+            // window.showLog("AIM_DAMAGE_REJECTING", isDamageAlertEnabled, model);
+            return;
+          }
+          // window.showLog("AIM_DAMAGE_RECEIVED_____", model);
+
+          if (window.services[refKey] && window.services[refKey]["updater"]) {
+            window.services[refKey]["remoteHandle"].call(
+              "updateRadarEmitter",
+              JSON.stringify(model)
+            );
+          } else {
+            // window.showLog("AIM_DAMAGE_NOTFOUND", refKey);
+          }
+
+          // if (window.services["radar"] && window.services["radar"]["updater"]) {
+          //   window.services["radar"]["updater"]("setDataModel", JSON.stringify(model));
+          // }
+          return;
+        }
+
+        if (key && key === "obstacles") {
+          model = json;
+
+          const refKey = `cv-obstacles-obstacles`;
+          // check if emission is enable on datamodel
+
+          const isEnvAlertsEnabled = window.checkConfigByKey(
+            "EnvironmentNavigation",
+            "EnvironmentAlerts"
+          );
+
+          if (!isEnvAlertsEnabled) {
+            // window.showLog("OBSTACLES_REJECTING", isEnvAlertsEnabled, model);
+            return;
+          }
+          window.showLog("OBSTACLES_RECEIVED_____", model);
+
+          model.forEach((item) => {
+            if (window.services[refKey] && window.services[refKey]["updater"]) {
+              const content = JSON.stringify(item);
+              window.showLog("OBSTACLES_EMITTING", refKey, content);
+              // alert("TRACKEDS_EMITTING: " + refKey + " " + content);
+              window.services[refKey]["remoteHandle"].call(
+                "updateRadarEmitter",
+                content
+              );
+            }
+          });
+
+          return;
+        }
+
+        if (key && key === "trackeds") {
+          model = json;
+
+          // parsed income
+
+          // {
+          //     "id": "76_enemy_x-26_y-72_t1705290217.4191132",
+          //     "uniqueId": 0,
+          //     "w": 10,
+          //     "h": 10,
+          //     "x": 149,
+          //     "y": 247,
+          //     "angle": -70.14478563067895,
+          //     "closest": true,
+          //     "index": -1,
+          //     "dist": 76,
+          //     "class": "enemy",
+          //     "silence": 0.7,
+          //     "color": [
+          //         255,
+          //         0,
+          //         255
+          //     ]
+          // }
+
+          model.forEach((item) => {
+            const refKey = `cv-radar-${item.class}`;
+            // check if emission is enable on datamodel
+
+            const isFriendEnabled = window.checkConfigByKey(
+              "TeamProximity",
+              "TeamProximityAlerts"
+            );
+            const isEnemyEnabled = window.checkConfigByKey(
+              "EnemyProximity",
+              "EnemyProximityAlerts"
+            );
+
+            if (item.class === "friend" && !isFriendEnabled) {
+              // window.showLog("TRACKEDS_REJECTING_FRIEND", isFriendEnabled);
+              return;
+            }
+            if (item.class === "enemy" && !isEnemyEnabled) {
+              // window.showLog("TRACKEDS_REJECTING_ENEMY", isEnemyEnabled);
+              return;
+            }
+
+            if (window.services[refKey] && window.services[refKey]["updater"]) {
+              const content = JSON.stringify(item);
+              window.showLog("TRACKEDS_EMITTING", refKey, content);
+              // alert("TRACKEDS_EMITTING: " + refKey + " " + content);
+              window.services[refKey]["remoteHandle"].call(
+                "updateRadarEmitter",
+                content
+              );
+            }
+          });
+
+          // if (window.services["radar"] && window.services["radar"]["updater"]) {
+          //   window.services["radar"]["updater"]("setDataModel", JSON.stringify(model));
+          // }
+          return;
+        }
+
+        if (key && key === "serviceStates") {
+          model = json;
+
+          window.Alpine.store("global")["serviceStates"] = {
+            ...window.Alpine.store("global")["serviceStates"],
+            ...model,
+          };
+
+          // window.showLog(
+          //   "setStateJSON_SERVICE_STATES",
+          //   window.Alpine.store("global")["serviceStates"]
+          // );
+
+          return;
+        }
+
+        if (key && key === "datamodel") {
+          model = json.map((item, index) => {
+            return {
+              ...item,
+              subitems: item.subitems.map((subitem) => {
+                return {
+                  ...subitem,
+                  value: window.treatValue(subitem.value, subitem.type),
+                };
+              }),
+            };
+          });
+
+          model.forEach((item) => {
+            item.subitems
+              .filter((subitem) => subitem.type === "combo")
+              .forEach((subitem) => {
+                window.Alpine.store("global")["inputStates"][
+                  "" + item.id + "-" + subitem.id + ""
+                ] = false;
+              });
+          });
+
+          window.showLog("FIRE_DATAMODEL", model);
+
+          audioChannelsUpdater("setDataModel", model);
+
+          if (window.beepUpdater) {
+            window.beepUpdater(JSON.stringify(model));
+          }
+
+          setTimeout(() => {
+            window.generateTabsIndex(true);
+          }, 1000);
+
+          // if (window.services["radar"] && window.services["radar"]["updater"]) {
+          //   window.services["radar"]["updater"](
+          //     "setDataModel",
+          //     JSON.stringify(model)
+          //   );
+          // }
+        }
+
+        if (key && key === "wavs" && json.length > 0) {
+          model = json.map((item, index) => {
+            return {
+              // name: item.split(".")[0],
+              name: `Sound ${index + 1}`,
+              file: item,
+            };
+          });
+          // window.showLog("setStateJSON_WAVS", model);
+          window.Alpine.store("global")[key] = model;
+          return;
+        }
+
+        if (key && key === "theremin") {
+          model = json;
+          // return;
+          // window.showLog("setStateJSON_THEREMIN", model);
+          if (model.status === "stopped") {
+            element = document.getElementById("toggler-cv-theremin");
+            if (element) {
+              element.innerHTML = "0";
+            }
+          } else {
+            toggler = document.getElementById("toggler-cv-theremin");
+            logger = document.getElementById("logger-cv-theremin");
+            if (toggler) {
+              toggler.innerHTML = "1";
+            }
+            if (logger) {
+              let keys = Object.keys(model);
+              logger.innerHTML = keys
+                .map((key) => {
+                  return `${key}: ${model[key]}`;
+                })
+                .join("<br>");
+            }
+          }
+          if (window.thereminUpdater) {
+            window.thereminUpdater(model);
+          }
+          return;
+        }
+
+        if (key) {
+          // window.showLog("setStateJSON_KEY", key);
+          window.Alpine.store("global")[key] = model;
+          return;
+        }
+
+        Object.keys(model).forEach((key) => {
+          let value = model[key];
+          if (key === "wavs" && typeof value === "string" && value.length > 0) {
+            value = JSON.parse(value).map((item) => {
+              return {
+                name: item.split(".")[0],
+                file: item,
+              };
+            });
+          }
+          if (key === "tabs" && typeof value === "string" && value.length > 0) {
+            value = JSON.parse(value);
+          }
+          if (key === "tabIndexSub" || key == "tabIndexSubItem") {
+            value = parseInt(value);
+          }
+          // window.showLog("SETTING_STATE", key, value);
+          window.Alpine.store("global")[key] = value;
+        });
+      };
+
+      window.triggerKey = (currentElement, direction) => {
+        if (currentElement) {
+          // currentElement.focus();
+          const realId = currentElement.getAttribute("realId");
+          const type = currentElement.getAttribute("type");
+
+          window.showLog(
+            "TRIGGERING_KEY",
+            "" + realId + "-" + type + "-" + direction + ""
+          );
+
+          if (realId && type) {
+            let itemElement = document.getElementById(
+              "" + realId + "-" + type + ""
+            );
+            if (itemElement) {
+              // trigger click
+              if (type === "switch") {
+                itemElement.click();
+                return;
+              }
+              if (type === "combo") {
+                window.showLog("COMBO_TRIGGERED", direction);
+                let list = itemElement.children[1].children;
+                let button = itemElement.children[0].children[0];
+                let buttonText = button.textContent || button.innerText;
+                window.showLog("COMBO_TRIGGERED", list, button, buttonText);
+
+                let wavs = window.Alpine.store("global")["wavs"];
+                // find index of current value
+                let currentIndex = wavs.findIndex(
+                  (item) => item.name === buttonText
+                );
+
+                let newIndex = 0;
+                if (direction === "plus") {
+                  newIndex =
+                    currentIndex + 1 >= wavs.length ? 0 : currentIndex + 1;
+                } else {
+                  newIndex =
+                    currentIndex - 1 < 0 ? wavs.length - 1 : currentIndex - 1;
+                }
+
+                let audioItemId = realId.split("-")[0];
+                let audioSubItemId = realId.split("-")[1];
+
+                let audioItem = window.Alpine.store("global")["datamodel"].find(
+                  (item) => item.id === audioItemId
+                );
+                let subItem = audioItem.subitems.find(
+                  (item) => item.id === audioSubItemId
+                );
+
+                pywebview.api.updateSubItem(
+                  audioItem.id,
+                  subItem.id,
+                  subItem.title,
+                  wavs[newIndex].file,
+                  subItem.type
+                );
+
+                for (let item of list) {
+                  window.showLog(
+                    "ITEM_ID",
+                    item.id.replace("" + realId + "-" + type + "-", "")
+                  );
+                }
+                itemElement.click();
+                return;
+              }
+              if (type === "spin") {
+                // ScreenReader-SpeechSpeed-spin-plus
+                let minusElement = document.getElementById(
+                  "" + realId + "-" + type + "-minus"
+                );
+                let plusElement = document.getElementById(
+                  "" + realId + "-" + type + "-plus"
+                );
+
+                window.showLog(
+                  "SPIN_TRIGGERED",
+                  direction,
+                  minusElement,
+                  plusElement
+                );
+                if (direction === "plus") {
+                  plusElement.click();
+                  setTimeout(() => {
+                    // itemElement.blur();
+                    const tabs = window.Alpine.store("global")["tabs"];
+                    const currentTab =
+                      window.Alpine.store("global")["currentTab"];
+                    const currentIndex = tabs.indexOf(currentTab);
+                    window.showLog("BLURRING", currentTab, currentIndex);
+
+                    // document.getElementById("menu-" + currentTab + "").focus();
+                  }, 500);
+                  return;
+                }
+                if (direction === "minus") {
+                  minusElement.click();
+                  setTimeout(() => {
+                    // itemElement.blur();
+                    const tabs = window.Alpine.store("global")["tabs"];
+                    const currentTab =
+                      window.Alpine.store("global")["currentTab"];
+                    const currentIndex = tabs.indexOf(currentTab);
+                    window.showLog("BLURRING", currentTab, currentIndex);
+
+                    // document.getElementById("menu-" + currentTab + "").focus();
+                  }, 500);
+                  return;
+                }
+                return;
+              }
+              if (type === "rate") {
+                const inputElement = document.getElementById(
+                  "" + realId + "-" + type + ""
+                );
+                const minusElement = document.getElementById(
+                  "" + realId + "-" + type + "-minus"
+                );
+                const plusElement = document.getElementById(
+                  "" + realId + "-" + type + "-plus"
+                );
+
+                window.currentRate = inputElement;
+                window.currentDirection = direction;
+
+                window.showLog("RATE_TRIGGERED_DIRECTION", direction);
+                // window.currentRate.dispatchEvent(
+                //   new Event("input", { bubbles: true })
+                // );
+                clearTimeout(window.rateChangeTimeout);
+                window.rateChangeTimeout = setTimeout(() => {
+                  window.showLog("RATE_TRIGGERED_START", window.currentRate);
+
+                  const currentValue = parseInt(window.currentRate.value);
+                  if (direction === "plus") {
+                    plusElement.click();
+                    window.showLog("RATE_TRIGGERED_NEW_VALUE_PLUS");
+                  }
+                  if (direction === "minus") {
+                    minusElement.click();
+                    window.showLog("RATE_TRIGGERED_NEW_VALUE_MINUS");
+                  }
+                }, 100);
+
+                /*
+                itemElement.focus();
+                itemElement.click();
+                // unfocus after 1 second
+                setTimeout(() => {
+                  // itemElement.blur();
+                  const tabs = window.Alpine.store("global")["tabs"];
+                  const currentTab =
+                    window.Alpine.store("global")["currentTab"];
+                  const currentIndex = tabs.indexOf(currentTab);
+                  window.showLog("BLURRING", currentTab, currentIndex);
+
+                  document.getElementById("menu-" + currentTab + "").focus();
+                }, 500);
+                    */
+
+                return;
+              }
+            }
+          }
+        }
+      };
+
+      window.closeModal = () => {
+        window.showLog("CLOSING_MODAL");
+        if (!window.Alpine.store("global")["modalLocked"]) {
+          window.setState("hideModal", true);
+        }
+      };
+
+      window.remoteHandles = {};
+      window.localHandle = null;
+
+      const audioChannelsUpdater = (method, json) => {
+        window.showLog(
+          "AUDIO_CHANNELS_UPDATER",
+          method,
+          json,
+          window.entities,
+          window.services
+        );
+
+        Object.keys(window.services).forEach((key) => {
+          const refKey = `${key}`;
+          if (window.services[refKey] && window.services[refKey]["updater"]) {
+            window.services[refKey]["remoteHandle"].call(
+              method,
+              JSON.stringify(json)
+            );
+          }
+        });
+
+        if (window.radarEmitterUpdater) {
+          window.radarEmitterUpdater(method, JSON.stringify(json));
+        }
+      };
+
+      const restartComponent = (refKey, callback) => {
+        setTimeout(() => {
+          if (window.services[refKey] && window.services[refKey]["updater"]) {
+            // window.services[refKey]["remoteHandle"].call("refresh");
+            window.showLog("RESTARTING_SERVICE_COMPONENT_1", refKey);
+            callback();
+          } else {
+            window.showLog("RESTARTING_IFRAME_COMPONENT_1", refKey);
+            callback();
+          }
+
+          window.dispatchEvent("restart-comp");
+        }, 1000);
+      };
+
+      window.serviceComponent = (ref, tag) => {
+        return {
+          init: () => {
+            const restart = new CustomEvent("restart-comp");
+            const refKeyMaster = `${ref}-${tag}`;
+            const ParentHandshake = PostMe.ParentHandshake;
+            const ChildHandshake = PostMe.ChildHandshake;
+            const childFrame = document.getElementById(
+              "iframe-service-" + refKeyMaster
+            );
+            const childWindow = childFrame.contentWindow;
+
+            // For safety it is strongly adviced to pass the explicit child origin instead of '*'
+            const messenger = new PostMe.WindowMessenger({
+              localWindow: window,
+              remoteWindow: childWindow,
+              remoteOrigin: "*",
+            });
+
+            const model = {
+              serviceStatus: (payload) => {
+                window.showLog("SERVICE_STATUS", payload);
+                alert("SERVICE_STATUS: " + payload);
+                // window.setState("serviceStatus", payload)
+              },
+              getDataModel: (item) => {
+                return JSON.stringify(
+                  window.Alpine.store("global")["datamodel"]
+                );
+              },
+              restart: (ref) => {
+                window.showLog("RESTARTING_SERVICE_COMPONENT", ref);
+
+                restartComponent(ref, startHandShake);
+              },
+              emitLog: (payload) => {
+                window.showLog(
+                  "=============== SERVICE_LOG ==================== \n",
+                  payload
+                );
+                return "ok";
+              },
+            };
+
+            const startHandShake = () => {
+              PostMe.ParentHandshake(messenger, model, 5000, 500).then(
+                (connection, connected) => {
+                  window.showLog(
+                    "SERVICE_PARENT_HANDSHAKE_connected: " + ref + "",
+                    connected
+                  );
+                  window.showLog("SERVICE_PARENT_HANDSHAKE", connection);
+                  // messenger.addMessageListener((message) => {
+                  //   window.showLog("CHILD_MESSAGE", message)
+
+                  // });
+
+                  window.services[refKeyMaster] = {
+                    localHandle: connection.localHandle(),
+                    remoteHandle: connection.remoteHandle(),
+                    updater: null,
+                  };
+
+                  window.services[refKeyMaster]["localHandle"].emit(
+                    "ping",
+                    undefined
+                  );
+
+                  window.services[refKeyMaster]["updater"] = (method, json) => {
+                    window.showLog("SERVICE_RADAR_UPDATER");
+                    window.services[refKeyMaster].remoteHandle.call(
+                      method,
+                      json
+                    );
+                  };
+                }
+              );
+            };
+            startHandShake();
+          },
+          devMode: Alpine.store("global")["devMode"],
+        };
+      };
+
+      window.iframeComponent = (ref) => {
+        return {
+          init: function () {
+            const restart = new CustomEvent("restart-iframe");
+            const ParentHandshake = PostMe.ParentHandshake;
+            const ChildHandshake = PostMe.ChildHandshake;
+            const childFrame = document.getElementById(
+              "iframe-container-" + ref
+            );
+            const childWindow = childFrame.contentWindow;
+
+            // For safety it is strongly adviced to pass the explicit child origin instead of '*'
+            const messenger = new PostMe.WindowMessenger({
+              localWindow: window,
+              remoteWindow: childWindow,
+              remoteOrigin: "*",
+            });
+
+            let lastJoyModel = "";
+
+            let AIM_STATE = {
+              silence: 0,
+              angle: 0,
+              dist: 0,
+              multiplier: 1.5,
+              x: 0,
+              y: 0,
+            };
+
+            let THEREMIN_STATE = {
+              x: 0,
+              y: 0,
+              volume: 0,
+              freq: 0,
+              waveform: "square",
+              status: "stopped",
+            };
+
+            let JOY_COMPONENT = {
+              calculateDistanceCartesian: (x1, y1, x2, y2) => {
+                return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+              },
+              calculateAngleCartesian: (x1, y1, x2, y2) => {
+                return (Math.atan2(y2 - y1, x2 - x1) * 180) / Math.PI;
+              },
+              calculateAnglePolar: (r1, a1, r2, a2) => {
+                return (Math.abs = a1 - a2);
+              },
+              radiansToDegrees: (radians) => {
+                return (radians * 180) / Math.PI;
+              },
+              degreesToRadians: (degrees) => {
+                return (degrees * Math.PI) / 180;
+              },
+              checkStopped: (model) => {
+                if (model.dist < 0.5 && !model.pressed) {
+                  return true;
+                }
+                return false;
+              },
+              generateJoyPayload: (model) => {
+                const multiplier = 0.5;
+                const maxDist = 600;
+
+                const angle = calculateAngleCartesian(
+                  0,
+                  0,
+                  parseFloat(model.x),
+                  parseFloat(model.y)
+                );
+                const dist = calculateDistanceCartesian(
+                  0,
+                  0,
+                  parseFloat(model.x),
+                  parseFloat(model.y)
+                );
+                const silence = getSilence(dist, maxDist);
+
+                const demoModel = {
+                  id: String(new Date().getTime()),
+                  uniqueId: String(new Date().getTime()),
+                  w: 50,
+                  h: 50,
+                  x: parseFloat(model.x),
+                  y: parseFloat(model.y),
+                  px: parseFloat(model.x),
+                  py: parseFloat(model.y),
+                  angle: angle,
+                  class: model.class,
+                  closest: false,
+                  dist: dist,
+                  silence: silence,
+                  multiplier: multiplier,
+                  stopped: JOY_COMPONENT.checkStopped(model),
+                };
+
+                // window.showLog("JOY_MODEL", demoModel)
+                return demoModel;
+              },
+            };
+
+            var model = {
+              setJoyModel: (payload) => {
+                lastJoyModel = payload;
+                let newState = JSON.parse(payload);
+                const modelPayload = JOY_COMPONENT.generateJoyPayload(newState);
+                // window.showLog("setJoyModel", modelPayload)
+                pywebview.api.syncState("testRadarItem", modelPayload);
+                if (window.radarEmitterUpdater) {
+                  window.radarEmitterUpdater(
+                    "updateRadarEmitter",
+                    JSON.stringify(modelPayload)
+                  );
+                }
+              },
+              setAimState: (payload) => {
+                AIM_STATE = JSON.parse(payload);
+                AIM_STATE["class"] = "aim";
+                // window.showLog("setAimState", AIM_STATE)
+                pywebview.api.syncState("testRadarItem", AIM_STATE);
+              },
+              getDataModel: (item) => {
+                return JSON.stringify(
+                  window.Alpine.store("global")["datamodel"]
+                );
+              },
+              restart: (ref) => {
+                window.showLog("RESTARTING_IFRAME_COMPONENT_0", ref);
+
+                restartComponent(ref, startHandShake);
+              },
+            }; // Arbitrary code to generate a child window we'll communicate with
+
+            const activateJOY = (remoteHandle, localHandle) => {};
+            const activateAIM = (remoteHandle, localHandle) => {};
+            const activateTHEREMIN = (remoteHandle, localHandle) => {
+              // keyboard listener
+              /*
+              document.addEventListener("keydown", function (event) {
+                window.showLog("KEYDOWN", event.code);
+
+                if (event.code === "KeyE") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  window.showLog("KEYDOWN", event);
+                  if (THEREMIN_STATE.status === "stopped") {
+                    THEREMIN_STATE.status = "started";
+                    pywebview.api.syncState("theremin", "start");
+                    return;
+                  } else {
+                    THEREMIN_STATE.status = "stopped";
+                    pywebview.api.syncState("theremin", "stop");
+                    return;
+                  }
+                }
+              });
+              */
+            };
+
+            const startHandShake = () => {
+              PostMe.ParentHandshake(messenger, model, 5000, 500).then(
+                (connection, connected) => {
+                  window.showLog(
+                    "CHILD_PARENT_HANDSHAKE_connected: " + ref + "",
+                    connected
+                  );
+                  window.showLog("CHILD_PARENT_HANDSHAKE", connection);
+                  // messenger.addMessageListener((message) => {
+                  //   window.showLog("CHILD_MESSAGE", message)
+
+                  // });
+
+                  window.remoteHandles[ref] = connection.remoteHandle();
+                  window.localHandle = connection.localHandle();
+
+                  window.remoteHandles[ref].addEventListener(
+                    "pong",
+                    function () {
+                      // alert('pong');
+                    }
+                  );
+
+                  if (ref === "joy") {
+                    activateJOY(window.remoteHandles[ref], window.localHandle);
+                  }
+
+                  if (ref === "aim") {
+                    activateAIM(window.remoteHandles[ref], window.localHandle);
+                    window.localHandle.emit("ping", undefined);
+                  }
+
+                  if (ref === "theremin") {
+                    activateTHEREMIN(
+                      window.remoteHandles[ref],
+                      window.localHandle
+                    );
+                    window.localHandle.emit("ping", undefined);
+                    window.thereminUpdater = (json) => {
+                      window.showLog("THEREMIN_UPDATED", json);
+                      THEREMIN_STATE = json;
+                      window.remoteHandles[ref].call(
+                        "updateTheremin",
+                        JSON.stringify(THEREMIN_STATE)
+                      );
+                    };
+                  }
+                  if (ref === "radaremitter") {
+                    window.localHandle.emit("ping", undefined);
+                    window.radarEmitterUpdater = (method, json) => {
+                      // window.showLog("RADAR_EMITTER_UPDATED", json)
+                      window.remoteHandles[ref].call(method, json);
+                    };
+                  }
+                  if (ref === "aim") {
+                    window.beepUpdater = (str) => {
+                      window.showLog("BEEP_UPDATER_AIM", str);
+                      window.remoteHandles[ref].call("updateBeep", str);
+                    };
+                  }
+                }
+              );
+            };
+
+            startHandShake();
+          },
+          devMode: Alpine.store("global")["devMode"],
+        };
+      };
+
+      window.mainComponent = (ref) => {
+        window.sideBarLocked = false;
+        return {
+          rightPressed: false,
+          leftPressed: false,
+          upPressed: false,
+          downPressed: false,
+          init: function () {
+            window.showLog("master_key", "init", ref);
+            // alert("master_key");
+
+            document.addEventListener(
+              "keydown",
+              (e) => this.keyDownHandler(e),
+              false
+            );
+            document.addEventListener(
+              "keyup",
+              (e) => this.keyUpHandler(e),
+              false
+            );
+          },
+          keyUpHandler(e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.showLog("master_key_up", e.key); // login the key down event
+
+            // alert("master_key, keyUpHandler", e.key);
+            if (e.key == "Right" || e.key == "ArrowRight") {
+              this.rightPressed = false;
+            } else if (e.key == "Left" || e.key == "ArrowLeft") {
+              this.leftPressed = false;
+            } else if (e.key == "Up" || e.key == "ArrowUp") {
+              this.upPressed = false;
+            } else if (e.key == "Down" || e.key == "ArrowDown") {
+              this.downPressed = false;
+            }
+          },
+          keyDownHandler(e) {
+            window.showLog("master_key_down", e.key); // login the key down event
+            // alert("master_key", e.key);
+
+            // keypress period
+            if (e.altKey && e.key === "h") {
+              e.preventDefault();
+              e.stopPropagation();
+              const btToggler = document.getElementById("right-sidebar-toggle");
+              if (btToggler && !window.sideBarLocked) {
+                btToggler.click();
+                window.sideBarLocked = true;
+              }
+              setTimeout(() => {
+                window.sideBarLocked = false;
+              }, 1000);
+              return;
+            }
+
+            // if alt + f4 = close
+            if (e.altKey && e.key === "F4") {
+              e.preventDefault();
+              e.stopPropagation();
+
+              pywebview.api.topbar("close");
+              pywebview.api.syncState(
+                "askSay",
+                "Closing Guide Play. Good bye!"
+              );
+
+              // window.close();
+              return;
+            }
+
+            // if ctrl + tab = next
+            if (!e.shiftKey && e.ctrlKey && e.key === "Tab") {
+              e.preventDefault();
+              e.stopPropagation();
+              window.cycleTab("next");
+
+              // remove class
+              const element = document.getElementById("about-body");
+              if (element) {
+                element.classList.remove(
+                  "active",
+                  "border-2",
+                  "border-yellow-100"
+                );
+                // remove atrribute
+                element.setAttribute("role", "presentation");
+                element.blur();
+              }
+
+              return;
+            }
+            // if ctrl + shift + tab = prev
+            if (e.ctrlKey && e.shiftKey && e.key === "Tab") {
+              e.preventDefault();
+              e.stopPropagation();
+              window.cycleTab("prev");
+
+              // remove class
+              const element = document.getElementById("about-body");
+              if (element) {
+                element.classList.remove(
+                  "active",
+                  "border-2",
+                  "border-yellow-100"
+                );
+                // remove atrribute
+                element.setAttribute("role", "presentation");
+                element.blur();
+              }
+              return;
+            }
+
+            // window.Alpine.store("global")["currentTab"]
+            const currentTab = window.Alpine.store("global")["currentTab"];
+            if (currentTab == "ABOUT") {
+              if (e.shiftKey && e.key == "Tab") {
+                // remove class
+                const element = document.getElementById("about-body");
+                if (element) {
+                  element.classList.remove(
+                    "active",
+                    "border-2",
+                    "border-yellow-100"
+                  );
+                  // remove atrribute
+                  element.setAttribute("role", "presentation");
+                  element.blur();
+                }
+              }
+
+              if (!e.shiftKey && e.key === "Tab") {
+                e.preventDefault();
+                e.stopPropagation();
+                let currentState =
+                  window.Alpine.store("global")["aboutSelected"];
+
+                if (currentState === true) {
+                  currentState = false;
+                } else {
+                  currentState = true;
+                }
+
+                window.Alpine.store("global")["aboutSelected"] = currentState;
+
+                if (currentState) {
+                  const element = document.getElementById("about-body");
+                  if (element) {
+                    // set atrribute
+                    element.setAttribute("role", "button");
+                    // add class
+                    element.classList.add(
+                      "active",
+                      "border-2",
+                      "border-yellow-100"
+                    );
+                    element.focus();
+                    const text = element.textContent;
+                    // remove double spaces
+                    const cleanText = text
+                      .replace(/\s+/g, " ")
+                      .replace(/\n/g, " ")
+                      .replace(/\t/g, " ");
+
+                    pywebview.api.syncState("askSay", cleanText);
+                  }
+                }
+
+                return;
+              }
+            }
+
+            if (currentTab == "AUDIO SETTINGS") {
+              window.showLog("master_key_down", "AUDIO SETTINGS", e.key);
+              // if tab cycleSubItem = next
+              if (!e.shiftKey && e.key === "Tab") {
+                e.preventDefault();
+                e.stopPropagation();
+                window.cycleSubItem(e, "next");
+                return;
+              }
+              // if shift + tab cycleSubItem = prev
+              if (e.shiftKey && e.key === "Tab") {
+                e.preventDefault();
+                e.stopPropagation();
+                window.cycleSubItem(e, "prev");
+                return;
+              }
+
+              const currentRootIndex = parseInt(
+                window.Alpine.store("global")["tabRootIndex"]
+              );
+
+              const elementsList = window.generateTabsIndex();
+              const currentElement = elementsList.find(
+                (item) => item.index === currentRootIndex
+              );
+
+              if (!currentElement) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.showLog("ELEMENT__NOTFOUND", currentRootIndex);
+                return;
+              }
+
+              const currentElementIndex = parseInt(
+                currentElement.element.getAttribute("index")
+              );
+
+              window.showLog(
+                "ELEMENT__FOUND",
+                currentRootIndex,
+                currentElementIndex,
+                currentElement.element.getAttribute("id")
+              );
+
+              if (currentElementIndex !== currentRootIndex) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.showLog(
+                  "ELEMENT__INDEX__MISMATCH",
+                  currentElementIndex,
+                  currentRootIndex
+                );
+                return;
+              }
+
+              if (e.key == "Right" || e.key == "ArrowRight") {
+                window.triggerKey(currentElement.element, "plus");
+                // stop propagation
+                e.preventDefault();
+                e.stopPropagation();
+                this.rightPressed = true;
+              } else if (e.key == "Left" || e.key == "ArrowLeft") {
+                window.triggerKey(currentElement.element, "minus");
+                e.preventDefault();
+                e.stopPropagation();
+                this.leftPressed = true;
+              } else if (e.key == "Up" || e.key == "ArrowUp") {
+                window.triggerKey(currentElement.element, "plus");
+                e.preventDefault();
+                e.stopPropagation();
+                this.upPressed = true;
+              } else if (e.key == "Down" || e.key == "ArrowDown") {
+                window.triggerKey(currentElement.element, "minus");
+                e.preventDefault();
+                e.stopPropagation();
+                this.downPressed = true;
+              }
+            } else {
+              window.showLog(
+                "master_key_down",
+                "NOT AUDIO SETTINGS",
+                currentTab
+              );
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+          },
+          devMode: Alpine.store("global")["devMode"],
+        };
+      };
+
+      window.settingsComponent = () => {
+        return {
+          started: true,
+          devMode: Alpine.store("global")["devMode"],
+        };
+      };
+    </script>
+
+    <!-- App preloader-->
+    <div
+      style="background-color: black"
+      class="app-preloader fixed z-50 grid h-full w-full place-content-center"
+    >
+      <div class="app-preloader-inner relative inline-block h-48 w-48"></div>
+    </div>
+
+    <!-- page wrap -->
+    <div id="allmain"></div>
+
+    <!-- 
+        This is a place for Alpine.js Teleport feature 
+        @see https://alpinejs.dev/directives/teleport
+      -->
+    <div id="x-teleport-target"></div>
+  </body>
+
+  <!-- window handlers Bottom -->
+  <div id="winbothandlers"></div>
+</html>

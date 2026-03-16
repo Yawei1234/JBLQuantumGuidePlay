@@ -1,0 +1,176 @@
+ Name                                     Version           License
+ Eel                                      0.16.0            MIT License
+ FastCopyFast                             0.52              MIT
+ Jinja2                                   3.1.2             BSD License
+ MarkupSafe                               2.1.3             BSD License
+ MouseInfo                                0.1.3             GNU General Public License v3 or later (GPLv3+)
+ Nuitka                                   2.0.3             Apache Software License
+ Pillow                                   10.1.0            Historical Permission Notice and Disclaimer (HPND)
+ PyAudio                                  0.2.14            MIT License
+ PyAutoGUI                                0.9.54            BSD License
+ PyGetWindow                              0.0.9             BSD License
+ PyMsgBox                                 1.0.9             GNU General Public License v3 or later (GPLv3+)
+ PyRect                                   0.2.0             BSD License
+ PyScreeze                                0.1.30            MIT License
+ PyYAML                                   6.0.1             MIT License
+ Pygments                                 2.17.2            BSD License
+ UltraDict                                0.0.6             UNKNOWN
+ aiohttp                                  3.9.3             Apache Software License
+ aiosignal                                1.3.1             Apache Software License
+ altgraph                                 0.17.4            MIT License
+ appshwnd                                 0.11              MIT
+ asttokens                                2.4.1             Apache 2.0
+ atomics                                  1.0.2             GNU General Public License v3 (GPLv3)
+ attrs                                    23.2.0            MIT License
+ auto-py-to-exe                           2.42.0            MIT License
+ bettercam                                1.0.0             MIT License
+ bottle                                   0.12.25           MIT License
+ bottle-websocket                         0.2.9             MIT License
+ certifi                                  2024.2.2          Mozilla Public License 2.0 (MPL 2.0)
+ cffi                                     1.16.0            MIT License
+ chardet                                  5.2.0             GNU Lesser General Public License v2 or later (LGPLv2+)
+ charset-normalizer                       3.3.2             MIT License
+ click                                    8.1.7             BSD License
+ clr-loader                               0.2.6             MIT License
+ colorama                                 0.4.6             BSD License
+ comm                                     0.2.1             BSD License
+ comtypes                                 1.2.0             MIT License
+ contourpy                                1.2.0             BSD License
+ ctypes-window-info                       0.15              MIT
+ customtkinter                            5.2.1             MIT License
+ cycler                                   0.12.1            BSD License
+ darkdetect                               0.8.0             BSD License
+ dearpygui                                1.10.1            MIT License
+ debugpy                                  1.8.0             MIT License
+ decorator                                5.1.1             BSD License
+ dxcam                                    0.0.5             MIT License
+ executing                                2.0.1             MIT License
+ fast-ctypes-screenshots                  0.10              MIT
+ fastimgconcat                            0.10              MIT
+ ffmpeg-screenshot-pipe                   0.10              MIT
+ filelock                                 3.13.1            The Unlicense (Unlicense)
+ flatten-any-dict-iterable-or-whatsoever  0.33              MIT
+ flatten-everything                       0.41              MIT
+ flexible-partial                         0.12              MIT
+ fonttools                                4.45.1            MIT License
+ frozenlist                               1.4.1             Apache Software License
+ fsspec                                   2024.2.0          BSD License
+ future                                   0.18.3            MIT License
+ game-overlay-sdk                         1.0.1             UNKNOWN
+ get-rectangle-infos                      0.10              MIT
+ getfilenuitkapython                      0.11              MIT
+ getmonitorresolution                     0.13              MIT
+ gevent                                   23.9.1            MIT License
+ gevent-websocket                         0.10.1            Copyright 2011-2017 Jeffrey Gelens <jeffrey@noppo.pro>
+ greenlet                                 3.0.1             MIT License
+ hackyargparser                           0.12              MIT
+ idna                                     3.6               BSD License
+ imageio                                  2.33.1            BSD License
+ imutils                                  0.5.4             UNKNOWN
+ ipykernel                                6.28.0            BSD License
+ ipython                                  8.19.0            BSD License
+ jedi                                     0.19.1            MIT License
+ jupyter_client                           8.6.0             BSD License
+ jupyter_core                             5.7.0             BSD License
+ kiwisolver                               1.4.5             BSD License
+ kthread                                  0.2.3             MIT License
+ kthread-sleep                            0.11              MIT
+ lazy_loader                              0.3               BSD License
+ list-all-files-recursively               0.12              MIT
+ logcontrol                               0.2.1             GNU Lesser General Public License v3 or later (LGPLv3+)
+ loguru                                   0.7.2             MIT License
+ matplotlib                               3.8.2             Python Software Foundation License
+ matplotlib-inline                        0.1.6             BSD 3-Clause
+ memory-profiler                          0.61.0            BSD License
+ mjpeg-streamer                           2023.12.25.post0  GNU Affero General Public License v3 or later (AGPLv3+)
+ more-itertools                           10.2.0            MIT License
+ mpmath                                   1.3.0             BSD License
+ mss                                      9.0.1             MIT License
+ multidict                                6.0.5             Apache Software License
+ nest-asyncio                             1.5.8             BSD License
+ netifaces                                0.11.0            MIT License
+ networkx                                 3.2.1             BSD License
+ ninja                                    1.11.1.1          Apache Software License; BSD License
+ numpy                                    1.26.2            BSD License
+ nutikacompile                            0.13              MIT
+ olefile                                  0.47              BSD License
+ opencv-python                            4.8.1.78          Apache Software License
+ opencv-python-headless                   4.9.0.80          Apache Software License
+ ordered-set                              4.1.0             MIT License
+ packaging                                23.2              Apache Software License; BSD License
+ pandas                                   2.2.0             BSD License
+ parso                                    0.8.3             MIT License
+ pefile                                   2023.2.7          MIT
+ pexpect                                  4.9.0             ISC License (ISCL)
+ platformdirs                             4.1.0             MIT License
+ prompt-toolkit                           3.0.43            BSD License
+ proxy-tools                              0.1.0             MIT License
+ psutil                                   5.9.6             BSD License
+ ptyprocess                               0.7.0             ISC License (ISCL)
+ pure-eval                                0.2.2             MIT License
+ pyclipper                                1.3.0.post5       MIT License
+ pycparser                                2.21              BSD License
+ pydub                                    0.25.1            MIT License
+ pygame                                   2.5.2             GNU Library or Lesser General Public License (LGPL)
+ pyglet                                   2.0.10            BSD License
+ pyinstaller                              6.2.0             GNU General Public License v2 (GPLv2)
+ pyinstaller-hooks-contrib                2023.10           Apache Software License; GNU General Public License v2 (GPLv2)   
+ pyinstaller-versionfile                  2.1.1             MIT License
+ pynput                                   1.7.7             GNU Lesser General Public License v3 (LGPLv3)
+ pyparsing                                3.1.1             MIT License
+ pyperclip                                1.8.2             BSD License
+ pypiwin32                                223               UNKNOWN
+ pystray                                  0.19.5            GNU Lesser General Public License v3 (LGPLv3)
+ pytesseract                              0.3.10            Apache Software License
+ python-bidi                              0.4.2             GNU Library or Lesser General Public License (LGPL)
+ python-dateutil                          2.8.2             Apache Software License; BSD License
+ python-osc                               1.8.3             Freely Distributable
+ pythonnet                                3.0.3             MIT License
+ pyttsx3                                  2.90              GNU General Public License v3 (GPLv3)
+ pytweening                               1.0.7             MIT License
+ pytz                                     2024.1            MIT License
+ pywebview                                4.4.1             BSD License
+ pywin32                                  306               Python Software Foundation License
+ pywin32-ctypes                           0.2.2             BSD-3-Clause
+ pywinstyles                              1.4               CC0 1.0 Universal (CC0 1.0) Public Domain Dedication
+ pyzmq                                    25.1.2            BSD License; GNU Library or Lesser General Public License (LGPL) 
+ requests                                 2.31.0            Apache Software License
+ scikit-image                             0.22.0            BSD License
+ scipy                                    1.11.4            BSD License
+ screeninfo                               0.8.1             MIT License
+ shapely                                  2.0.3             BSD License
+ shlexwhichplus                           0.10              MIT
+ simpleaudio                              1.0.4             MIT License
+ six                                      1.16.0            MIT License
+ sounddevice                              0.4.6             MIT License
+ soundfile                                0.12.1            BSD License
+ spawny                                   2.1.4             BSD License
+ stack-data                               0.6.3             MIT License
+ subprocess-alive                         0.10              MIT
+ subprocesskiller                         0.11              MIT
+ svgpathtools                             1.6.1             MIT License
+ svgwrite                                 1.4.3             MIT License
+ sympy                                    1.12              BSD License
+ termcolor                                2.4.0             MIT License
+ textdistance                             4.6.1             MIT License
+ threadmanager                            0.1.0             GNU Lesser General Public License v3 or later (LGPLv3+)
+ tifffile                                 2023.12.9         BSD License
+ tkextrafont                              0.6.3             GNU GPLv3
+ torch                                    2.2.0             BSD License
+ torchvision                              0.17.0            BSD
+ tornado                                  6.4               Apache Software License
+ touchtouch                               0.11              MIT
+ traitlets                                5.14.1            BSD License
+ typing_extensions                        4.9.0             Python Software Foundation License
+ tzdata                                   2024.1            Apache Software License
+ urllib3                                  2.2.1             MIT License
+ vdf                                      3.4               MIT License
+ websockets                               12.0              BSD License
+ wexpect                                  4.0.0             MIT
+ whichcraft                               0.6.1             BSD License
+ win32-setctime                           1.1.0             MIT License
+ windows-capture                          1.0.60            MIT License
+ yarl                                     1.9.4             Apache Software License
+ zope.event                               5.0               Zope Public License
+ zope.interface                           6.1               Zope Public License
+ zstandard                                0.22.0            BSD License

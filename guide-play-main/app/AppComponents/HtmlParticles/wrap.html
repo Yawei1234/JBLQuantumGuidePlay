@@ -1,0 +1,956 @@
+<!-- Page Wrapper -->
+<div
+  id="root"
+  class="min-h-100vh flex grow pt-[40px] flex-col flex-wrap"
+  style="
+    background-image: url(images/bg.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    background-color: black;
+  "
+  x-cloak
+  x-data
+>
+  <div
+    id="mainComponent"
+    x-data="window.mainComponent('wrap-page')"
+    x-init="init"
+    class="flex flex-col flex-wrap w-full h-full"
+  >
+    <!-- App Header Wrapper-->
+    <nav
+      class="headerNew w-full h-auto flex flex-row flex-wrap justify-between px-[60px] py-2"
+    >
+      <div class="flex-1 h-[70px] flex items-center justify-start">
+        <ul class="flex flex-wrap flex-row">
+          <template x-for="tab in $store.global.tabs">
+            <li
+              :class="{ 'active': $store.global.currentTab === tab }"
+              x-data="{ 
+                currentTab: $store.global.currentTab, 
+                tabIndex: getRole(tab, 'tabIndex'), 
+                activated: $store.global.currentTab,
+                id: 'menu-'+tab+'',
+                role: $store.global.currentTab === tab ? 'button' : 'item' 
+              }"
+              x-effect="window.updateMenuItemProps($store.global.currentTab)"
+              class="menuItem hover:cursor-pointer"
+              x-bind:tabindex="tabIndex"
+              x-bind:role="role"
+              x-bind:id="id"
+              :aria-selected="$store.global.currentTab === tab"
+              x-text="tab"
+              @click="window.changeTab(tab)"
+              @mouseover="$store.hoveredTab = tab"
+              @mouseover.away="$store.hoveredTab = null"
+            ></li>
+          </template>
+        </ul>
+      </div>
+      <div
+        @click="pywebview.api.syncState('refresh', 'null')"
+        class="w-auto justify-end flex"
+      >
+        <img
+          src="images/guideplay-dark-logo.png"
+          alt="Guide Play Logo"
+          class="h-[70px] w-auto"
+        />
+      </div>
+    </nav>
+
+    <!-- Main Content Wrapper -->
+    <main class="pt-6 w-full flex-1 px-5">
+      <div
+        id="content-frame"
+        style="height: calc(90vh - var(--main-window-header-height))"
+        class="large-2 flex w-full h-full overflow-auto px-5"
+      >
+        <div class="w-full h-full px-5 flex flex-row justify-center">
+          <div
+            id="frame-content"
+            class="w-full max-w-[1180px] h-auto flex flex-col"
+          >
+            <!-- AUDIO SETTINGS -->
+            <div
+              class="w-full flex flex-col transition-opacity"
+              x-transition:enter="ease-out duration-300"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+              x-transition:leave="ease-in duration-100"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              x-show="$store.global.currentTab === 'AUDIO SETTINGS'"
+              x-data="window.settingsComponent()"
+              x-init="init"
+            >
+              <template x-for="audioItem in $store.global.datamodel">
+                <div class="w-full flex flex-col mb-4 mt-8">
+                  <!-- START RENDER LOOP -->
+                  <!-- alpine loop $store.global.datamodel -->
+
+                  <div
+                    x-data="{
+                      id: 'audioItem-'+audioItem.tabIndex+'',
+                      index: audioItem.rootIndex,
+                      fakeTabIndex: audioItem.tabIndex,
+                      title: ''+audioItem.name+'',
+                      role: $store.global.tabRootIndex === audioItem.rootIndex ? 'button' : 'item' 
+                    }"
+                    x-bind:fakeTabIndex="fakeTabIndex"
+                    x-bind:index="index"
+                    x-bind:tabindex="index"
+                    x-bind:role="role"
+                    x-bind:id="id"
+                    :class="{ 'active border-2 border-yellow-100': $store.global.tabRootIndex === index}"
+                    class="tabbed w-full mb-6 border-2"
+                    @click="window.setTab($event, index)"
+                  >
+                    <h3 x-text="title" class="item-title"></h3>
+                  </div>
+
+                  <template x-for="subItem in audioItem.subitems">
+                    <div
+                      x-data="{
+                        id: 'audioSubItem-'+audioItem.tabIndex+'-'+subItem.tabIndex+'',
+                        fakeTabIndex: ''+audioItem.tabIndex+'-'+subItem.tabIndex+'',
+                        indexB: subItem.rootIndex,
+                        type: subItem.type, 
+                        realId: ''+audioItem.id+'-'+subItem.id+'',
+                        subtitle: ''+subItem.title+'',
+                        role: $store.global.tabRootIndex === subItem.rootIndex ? 'button' : 'item'
+                      }"
+                      class="w-full flex item-center justify-center"
+                    >
+                      <!-- DESC  -->
+                      <div
+                        x-bind:id="''+realId+'-subtitle'"
+                        x-bind:index="indexB"
+                        x-bind:role="role"
+                        x-bind:tabindex="subItem.type === 'desc' ? indexB : -1"
+                        x-bind:type="type"
+                        x-bind:realId="realId"
+                        x-bind:hide="subItem.type !== 'desc'"
+                        x-bind:fakeTabIndex="fakeTabIndex"
+                        x-show="subItem.type === 'desc'"
+                        :class="{ 
+                          'active border-2 border-yellow-100': $store.global.tabRootIndex === indexB, 
+                          'hidden': subItem.type !== 'desc'
+                        }"
+                        class="tabbed w-full"
+                        @click="window.setTab($event, indexB)"
+                      >
+                        <p class="item-description w-[60%]">
+                          <span x-text="subtitle"></span>
+                        </p>
+                      </div>
+
+                      <!-- TITLE + COMP -->
+                      <div
+                        x-bind:id="realId"
+                        x-bind:role="role"
+                        x-bind:index="indexB"
+                        x-bind:tabindex="subItem.type !== 'desc' ? indexB : -1"
+                        x-bind:type="type"
+                        x-bind:realId="realId"
+                        x-bind:fakeTabIndex="fakeTabIndex"
+                        x-show="subItem.type !== 'desc'"
+                        :class="{ 'active border-2 border-yellow-100': $store.global.tabRootIndex === indexB}"
+                        class="tabbed w-full flex flex-row flex-wrap mt-8 border-2"
+                      >
+                        <div
+                          @click="window.setTab($event, indexB)"
+                          class="flex-1 item-subtitle flex items-center"
+                        >
+                          <span x-text="subtitle"></span>
+                        </div>
+                        <div
+                          class="w-[256px] rounded-full h-[64px]"
+                          :class="{ 'bg-blue-200': subItem.type === 'switch' || subItem.type === 'combo'}"
+                        >
+                          <!-- TOGGLE COMPONENT x-show="subItem.type === 'switch' -->
+                          <div
+                            x-data="{codename: subItem.type === 'switch' ? ''+realId+'-switch' : 'null'}"
+                            x-bind:id="codename"
+                            @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, subItem.value, subItem.type)"
+                            x-show="subItem.type === 'switch'"
+                            class="cursor-pointer mx-2 shadow rounded-full h-[60px] mt-1 flex relative items-center"
+                          >
+                            <div
+                              role="presentation"
+                              x-bind:aria-describedby="'switchstatus-'+codename+''"
+                              class="w-full flex justify-center"
+                            >
+                              <button
+                                role="presentation"
+                                tabindex="-1"
+                                class="switch-label"
+                              >
+                                ON
+                              </button>
+                            </div>
+                            <div
+                              role="presentation"
+                              class="w-full flex justify-center"
+                            >
+                              <button
+                                role="presentation"
+                                tabindex="-1"
+                                class="switch-label"
+                              >
+                                OFF
+                              </button>
+                            </div>
+                            <div
+                              role="alert"
+                              x-bind:id="'switchstatus-'+codename+''"
+                              aria-live="assertive"
+                              hidden
+                              class="sr-only"
+                            >
+                              A switch is now
+                              x-bind:aria-checked="'subItem.value === 'on' ?
+                              'true' : 'false''"
+                            </div>
+                            <span
+                              role="presentation"
+                              class="switch-label pt-1 elSwitch shadow text-white flex items-center justify-center w-[110px] rounded-full h-[42px] top-[6px] absolute transition-all left-[1px]"
+                              :class="{ 'left-[128px]': subItem.value === 'off', 'left-[1px]': subItem.value === 'on' }"
+                              x-transition:enter="transition-all duration-500 easy-in-out"
+                              x-text="subItem.value === 'on' ? 'ON' : 'OFF'"
+                            >
+                            </span>
+                          </div>
+
+                          <!-- RATE COMPONENT x-show="subItem.type === 'rate'" -->
+                          <div
+                            x-show="subItem.type === 'rate'"
+                            class="w-[256px] rounded-full h-[64px]"
+                          >
+                            <div
+                              class="w-full h-full flex items-center justify-between flex-wrap flex-row"
+                            >
+                              <div class="w-[80%] px-4">
+                                <input
+                                  x-data="{codename: subItem.type === 'rate' ? ''+realId+'-rate' : 'null'}"
+                                  x-bind:id="codename"
+                                  tabindex="-1"
+                                  x-on:change.debounce="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, $event.target.value, subItem.type)"
+                                  min="1"
+                                  max="100"
+                                  x-model="subItem.value"
+                                  value="''+subItem.value+''"
+                                  type="range"
+                                />
+                              </div>
+                              <div
+                                class="flex-1 range-label flex justify-center items-center"
+                              >
+                                <div
+                                  x-data="{minusId: ''+realId+'-rate'+'-minus'}"
+                                  @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, 'minus', subItem.type)"
+                                  x-bind:id="minusId"
+                                  class="w-0 h-0 flex cursor-pointer"
+                                ></div>
+                                <span x-text="''+subItem.value+'%'"></span>
+                                <div
+                                  x-data="{plusId: ''+realId+'-rate'+'-plus'}"
+                                  @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, 'plus', subItem.type)"
+                                  x-bind:id="plusId"
+                                  class="w-0 h-0 flex cursor-pointer"
+                                ></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- COMBO COMPONENT x-show="subItem.type === 'combo'" -->
+                          <div
+                            x-show="subItem.type === 'combo'"
+                            class="w-full h-full flex items-center justify-center"
+                          >
+                            <div
+                              x-data="{id: subItem.type === 'combo' ? ''+realId+'-combo' : 'null'}"
+                              x-bind:id="id"
+                              class="flex-col flex items-start justify-start w-full px-2 relative"
+                              @click.away="$store.global.inputStates[''+audioItem.id+'-'+subItem.id+''] = false"
+                            >
+                              <div
+                                x-on:click="window.toggleCombo(''+audioItem.id+'-'+subItem.id+'')"
+                                class="px-4 py-2 bg-blue-200 rounded w-full flex flex-row flex-wrap items-center justify-between"
+                              >
+                                <button
+                                  tabindex="-1"
+                                  x-text="window.treatValue(subItem.value, 'wav')"
+                                  class="flex-1 text-blue-900 font-bold truncate ..."
+                                ></button>
+
+                                <i
+                                  class="fa-solid fa-caret-down text-blue-900 text-2xl"
+                                ></i>
+                              </div>
+
+                              <div
+                                class="flex w-[240px] h-[220px] overflow-hidden overflow-y-auto absolute z-20 items-center justify-center flex-wrap dropdown-files rounded-lg shadow bg-white"
+                                x-bind:class="{'hidden':!$store.global.inputStates[''+audioItem.id+'-'+subItem.id+'']}"
+                              >
+                                <template
+                                  x-for="comboItem in $store.global.wavs"
+                                >
+                                  <a
+                                    x-data="{comboItemId: ''+realId+'-combo-'+comboItem.file+''}"
+                                    x-bind:id="''+comboItemId+''"
+                                    tabindex="-1"
+                                    @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, comboItem.file, subItem.type)"
+                                    x-text="comboItem.name"
+                                    class="bg-gray-50 hover:bg-gray-200 w-full text-center py-2 text-blue-900 font-bold"
+                                    href="#"
+                                  ></a>
+                                </template>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- SPIN COMPONENT x-show="subItem.type === 'spin'" -->
+                          <div
+                            x-show="subItem.type === 'spin'"
+                            class="w-full h-full flex items-center justify-center"
+                          >
+                            <div
+                              x-data="{id: subItem.type === 'spin' ? ''+realId+'-spin' : 'null'}"
+                              x-bind:id="id"
+                              class="spinner"
+                            >
+                              <span
+                                x-data="{minusId: subItem.type === 'spin' ? ''+realId+'-spin-minus' : 'null'}"
+                                x-bind:id="minusId"
+                                @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, ''+subItem.value+'*'+subItem.range+'', '-1')"
+                                class="minus flex items-center justify-start pl-2"
+                              >
+                                <img src="images/minor.svg" />
+                              </span>
+                              <span
+                                x-text="''+subItem.value+'X'"
+                                class="num"
+                              ></span>
+                              <span
+                                x-data="{plusId: subItem.type === 'spin' ? ''+realId+'-spin-plus' : 'null'}"
+                                x-bind:id="plusId"
+                                @click="pywebview.api.updateSubItem(audioItem.id, subItem.id, subItem.title, ''+subItem.value+'*'+subItem.range+'', '+1')"
+                                class="plus flex items-center justify-end pr-2"
+                              >
+                                <img src="images/major.svg" />
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </template>
+
+                  <hr class="mt-12 mb-6 item-spacer" />
+                </div>
+              </template>
+            </div>
+
+            <!-- ABOUT SETTINGS -->
+            <div
+              class="w-full flex flex-col transition-opacity duration-300"
+              x-transition:enter="ease-out"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+              x-transition:leave="ease-in"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              x-show="$store.global.currentTab === 'ABOUT'"
+              x-data="{
+                selected: $store.global.aboutSelected,
+                role: $store.global.aboutSelected ? 'button' : 'item', 
+              }"
+              x-init="init"
+            >
+              <p
+                x-bind:tabindex="1"
+                id="about-body"
+                x-bind:role="role"
+                alt="Welcome to Guide Play an innovative technology to help the visually impaired play games like never before. This software leverages AI and machine learning to turn the objects and structures in the Counter-Strike 2 environment into sounds, emulating echolocation and allowing the visually impaired to perceive their spatial environment. Guide Play is offered as a free tool, and although the use of JBL Quantum headphones enhances the experience, they are not required for gameplay. We recommend that those who with 0% vision seek assistance in setting up the program and while using it for the first time. Find out more at: JBLQuantumGuidePlay.com"
+                class="mb-4 mt-8 item-description w-[60%]"
+                :class="{ 'active border-2 border-yellow-100': selected === true}"
+              >
+                <span>
+                  <span class="font-bold">Welcome to Guide Play</span>
+                  an innovative technology to help the visually impaired play
+                  games like never before.
+                  <br /><br />
+                  This software leverages AI and machine learning to turn the
+                  objects and structures in the Counter-Strike 2 environment
+                  into sounds, emulating echolocation and allowing the visually
+                  impaired to perceive their spatial environment.
+                  <br /><br />
+                  Guide Play is offered as a free tool, and although the use of
+                  JBL Quantum headphones enhances the experience, they are not
+                  required for gameplay.
+                  <br /><br />
+                  We recommend that those who with 0% vision seek assistance in
+                  setting up the program and while using it for the first time.
+                  <br /><br />
+                  Find out more here:
+                  <a
+                    href="https://jblquantumguideplay.com/"
+                    target="_blank"
+                    class="text-blue-300 font-bold"
+                    >JBLQuantumGuidePlay.com</a
+                  >
+                </span>
+              </p>
+            </div>
+
+            <!-- VIDEO SETUP SETTINGS -->
+            <div
+              class="w-full flex flex-col transition-opacity duration-300"
+              x-transition:enter="ease-out"
+              x-transition:enter-start="opacity-0"
+              x-transition:enter-end="opacity-100"
+              x-transition:leave="ease-in"
+              x-transition:leave-start="opacity-100"
+              x-transition:leave-end="opacity-0"
+              x-show="$store.global.currentTab === 'VIDEO SETUP'"
+            >
+              <div class="w-full flex flex-col mb-4 mt-8">
+                <div class="w-full mb-6">
+                  <h3 class="item-title">VIDEO SETUP</h3>
+                </div>
+
+                <div class="w-full">
+                  <p class="item-description w-[60%]">
+                    <span>
+                      <span class="text-blue-300 font-bold">GuidePlay</span>
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                      Molestiae sed consectetur animi deleniti labore, placeat
+                      ut dolores soluta incidunt vel est officia at aspernatur
+                      dolorum nihil explicabo debitis id quidem? Lorem ipsum
+                      dolor sit amet consectetur adipisicing elit. Quo, dolorem,
+                      laudantium quia aspernatur ducimus hic atque, praesentium
+                      nulla cumque temporibus exercitationem. <br />
+                      <span class="text-blue-300 font-bold"
+                        >Laboriosam facere</span
+                      >
+                      beatae deleniti tempora quas ab ea vero! Lorem ipsum dolor
+                      sit amet consectetur adipisicing elit. Quo, dolorem,
+                      laudantium quia aspernatur ducimus hic atque, praesentium
+                      nulla cumque temporibus exercitationem. Laboriosam facere
+                      beatae deleniti tempora quas ab ea vero!
+                    </span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div id="spatialtests-container"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="w-full">
+      <div class="w-full h-[0px] overflow-hidden">
+        <!-- Right Sidebar Toggle -->
+        <button
+          id="right-sidebar-toggle"
+          @click="$store.global.isRightSidebarExpanded = !$store.global.isRightSidebarExpanded"
+          @keydown.window.period="$store.global.isRightSidebarExpanded = !$store.global.isRightSidebarExpanded"
+          class="btn h-8 w-8 rounded-full bg-blue-300"
+        >
+          Sidebar
+        </button>
+
+        <div x-data="{$store.global.showModal:false}">
+          <button
+            tabindex="-1"
+            @click="$store.global.showModal = true"
+            @keydown.window.*="$store.global.showModal = !$store.global.showModal"
+            class="mt-4 btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
+          >
+            normal modal
+          </button>
+          <button
+            tabindex="-1"
+            @click="$store.global.showModal = true, pywebview.api.modaldata()"
+            class="mt-4 btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
+          >
+            python write to modal
+          </button>
+          <template x-teleport="#x-teleport-target">
+            <div
+              class="fixed inset-0 z-[100] flex flex-col items-center justify-center overflow-hidden px-4 py-6 sm:px-5"
+              x-show="$store.global.showModal"
+              role="dialog"
+              @keydown.window.escape="window.closeModal()"
+            >
+              <div
+                id="fake-modal-close"
+                @click="$store.global.showModal = false"
+                class="w-2 h-2"
+              ></div>
+              <div
+                class="absolute inset-0 bg-slate-900/60 backdrop-blur transition-opacity duration-300"
+                @click="window.closeModal()"
+                id="modal-backdrop"
+                x-show="$store.global.showModal"
+                x-transition:enter="ease-out"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+              ></div>
+              <div
+                class="relative max-w-lg rounded-lg bg-white px-4 py-10 text-center transition-opacity duration-300 dark:bg-navy-700 sm:px-5"
+                x-show="$store.global.showModal"
+                x-transition:enter="ease-out"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="ease-in"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                id="modalbody"
+              >
+                <!-- <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="inline h-28 w-28 text-success"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg> -->
+                <div class="p-8">
+                  <img
+                    src="images/guideplay-dark-logo.png"
+                    alt="Guide Play Logo"
+                    class="h-[70px] w-auto"
+                  />
+                </div>
+
+                <div class="mt-4">
+                  <h2 class="text-md text-slate-700 dark:text-navy-100">
+                    Guide Play
+                  </h2>
+                  <p class="mt-2 text-xs">v1.0.0</p>
+                  <button
+                    tabindex="-1"
+                    @click="window.closeModal()"
+                    class="btn mt-6 bg-success font-medium text-white hover:bg-success-focus focus:bg-success-focus active:bg-success-focus/90"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <button
+          tabindex="-1"
+          class="mt-4 btn bg-slate-150 font-medium text-slate-800 hover:bg-slate-200 focus:bg-slate-200 active:bg-slate-200/80 dark:bg-navy-500 dark:text-navy-50 dark:hover:bg-navy-450 dark:focus:bg-navy-450 dark:active:bg-navy-450/90"
+          @click="$notification({content:'#custom-html-notif',duration:6000}), pywebview.api.notidata() "
+        >
+          NOTI
+        </button>
+      </div>
+
+      <!-- Right Sidebar -->
+      <div
+        x-show="$store.global.isRightSidebarExpanded"
+        @keydown.window.escape="$store.global.isRightSidebarExpanded = false"
+      >
+        <div
+          class="fixed inset-0 z-[150] bg-slate-900/60 transition-opacity duration-200"
+          @click="$store.global.isRightSidebarExpanded = false"
+          x-show="$store.global.isRightSidebarExpanded"
+          x-transition:enter="ease-out"
+          x-transition:enter-start="opacity-0"
+          x-transition:enter-end="opacity-100"
+          x-transition:leave="ease-in"
+          x-transition:leave-start="opacity-100"
+          x-transition:leave-end="opacity-0"
+        ></div>
+        <div style="height: 100%" class="side-shelf z-[151] w-full sm:w-80">
+          <div class="side-shelf z-[151] w-full sm:w-80">
+            <div
+              x-data="{activeTab:'tabServices'}"
+              class="relative flex h-full w-full transform-gpu flex-col bg-white transition-transform duration-200 dark:bg-navy-750"
+              x-show="$store.global.isRightSidebarExpanded"
+              x-transition:enter="ease-out"
+              x-transition:enter-start="translate-x-full"
+              x-transition:enter-end="translate-x-0"
+              x-transition:leave="ease-in"
+              x-transition:leave-start="translate-x-0"
+              x-transition:leave-end="translate-x-full"
+            >
+              <div
+                class="flex flex-col px-4 py-2 bg-black h-full overflow-hidden"
+              >
+                <div
+                  x-show="activeTab === 'tabServices'"
+                  class="flex flex-1 flex-col"
+                >
+                  <!-- header-sidebar widgets -->
+                  <div class="w-full flex flex-wrap justify-between">
+                    <p class="flex flex-1 shrink-0 items-center space-x-1.5">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"
+                        />
+                      </svg>
+                      <span class="text-xs">Services</span>
+                    </p>
+                    <button
+                      @click="$store.global.isRightSidebarExpanded=false"
+                      class="btn -mr-1 h-6 w-6 rounded-full p-0 hover:bg-slate-300/20 focus:bg-slate-300/20 active:bg-slate-300/25 dark:hover:bg-navy-300/20 dark:focus:bg-navy-300/20 dark:active:bg-navy-300/25"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        stroke-width="2"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- WIDGETS SCROLLER -->
+                  <div
+                    style="height: 79vh"
+                    class="overflow-y-auto overflow-x-hidden w-full h-[79vh] select-none"
+                  >
+                    <div
+                      id="widgets-container"
+                      class="w-full bg-black font-mono p-2"
+                      x-data="{gamestate: $store.global['gamestate']}"
+                    >
+                      Game State:
+                      <span id="gameStateSlot" x-text="gamestate"></span>
+                    </div>
+
+                    <!-- WIDGET - FULL GAMESTATE -->
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-fullcapture"
+                          class="w-8 h-8 bg-purple-300 rounded text-white text-xs mr-4 flex items-center justify-center"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>gameplay-details</div>
+                      </div>
+                      <div
+                        id="gameplay-details-container"
+                        class="w-full h-[250px] bg-gray-900 flex flex-col overflow-auto"
+                      ></div>
+                    </div>
+
+                    <!-- WIDGET - FULL ROUNDSTATE -->
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-fullcapture"
+                          class="w-8 h-8 bg-purple-300 rounded text-white text-xs mr-4 flex items-center justify-center"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>round-details</div>
+                      </div>
+                      <div
+                        id="roundplay-details-container"
+                        class="w-full h-[250px] bg-gray-900 flex flex-col overflow-auto"
+                      ></div>
+                    </div>
+
+                    <!--  -->
+                    <!-- WIDGET - FULL CAPTURE -->
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-fullcapture"
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          @click="pywebview.api.toggleService('cv-fullcapture', $store.global['serviceStates']['cv-fullcapture'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-fullcapture'] === true, 'bg-red-700': $store.global['serviceStates']['cv-fullcapture'] === false }"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-fullcapture</div>
+                      </div>
+                    </div>
+
+                    <!-- WIDGET - THEREMIN EMITER -->
+                    <div
+                      class="w-full bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        x-data="{val: $store.global['serviceStates']['theremin'] ? 'OFF' : 'ON'}"
+                        class="w-full flex flex-wrap text-white font-mono items-center"
+                      >
+                        <div
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          id="toggler-cv-theremin"
+                          @click="pywebview.api.toggleService('cv-theremin', $store.global['serviceStates']['cv-theremin'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-theremin'] === true, 'bg-red-700': $store.global['serviceStates']['cv-theremin'] === false }"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-theremin</div>
+                      </div>
+                      <div
+                        id="theremin-container"
+                        class="w-full h-[150px] bg-gray-900 flex flex-col overflow-hidden"
+                      >
+                        <iframe
+                          id="iframe-container-theremin"
+                          x-data="window.iframeComponent('theremin')"
+                          x-init="init"
+                          src="comps/theremin.html"
+                          frameborder="0"
+                          class="w-full h-12 overflow-hidden"
+                          scrolling="no"
+                        ></iframe>
+
+                        <div
+                          id="logger-cv-theremin"
+                          class="text-xs font-mono text-gray-600 bg-black"
+                        ></div>
+                      </div>
+                    </div>
+                    <!--  -->
+                    <!-- WIDGET - RADAR EMITER -->
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-radar"
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          @click="pywebview.api.toggleService('cv-radar', $store.global['serviceStates']['cv-radar'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-radar'] === true, 'bg-red-700': $store.global['serviceStates']['cv-radar'] === false }"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-radar</div>
+                      </div>
+
+                      <!-- ENEMY CHANNEL -->
+                      <iframe
+                        id="iframe-service-cv-radar-enemy"
+                        x-data="window.serviceComponent('cv-radar', 'enemy')"
+                        x-init="init"
+                        src="comps/radaremitter.html?id=enemy"
+                        scrollbars="none"
+                        class="comp-radar-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                      <!-- FRIEND CHANNEL -->
+                      <iframe
+                        id="iframe-service-cv-radar-friend"
+                        x-data="window.serviceComponent('cv-radar', 'friend')"
+                        x-init="init"
+                        src="comps/radaremitter.html?id=friend"
+                        scrollbars="none"
+                        class="comp-radar-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                    </div>
+
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-damage"
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          @click="pywebview.api.toggleService('cv-damage', $store.global['serviceStates']['cv-damage'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-damage'] === true, 'bg-red-700': $store.global['serviceStates']['cv-damage'] === false }"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-damage</div>
+                      </div>
+
+                      <!-- DAMAGE CHANNEL -->
+                      <iframe
+                        id="iframe-service-cv-damage-damage"
+                        x-data="window.serviceComponent('cv-damage', 'damage')"
+                        x-init="init"
+                        src="comps/radaremitter.html?id=damage"
+                        scrollbars="none"
+                        class="comp-damage-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                    </div>
+
+                    <!-- WIDGET OBSTACLES -->
+                    <div
+                      class="w-full flex-1 bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center overflow-hidden mb-2"
+                      >
+                        <div
+                          id="toggler-cv-damage"
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          @click="pywebview.api.toggleService('cv-damage', $store.global['serviceStates']['cv-damage'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-damage'] === true, 'bg-red-700': $store.global['serviceStates']['cv-damage'] === false }"
+                        ></div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-obstacles</div>
+                      </div>
+
+                      <!-- OBSTACLES CHANNEL -->
+                      <iframe
+                        id="iframe-service-cv-obstacles-obstacles"
+                        x-data="window.serviceComponent('cv-obstacles', 'obstacles')"
+                        x-init="init"
+                        src="comps/radaremitter.html?id=obstacles"
+                        scrollbars="none"
+                        class="comp-obstacles-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                    </div>
+
+                    <!-- WIDGET - AIM EMITER -->
+                    <div
+                      class="w-full bg-black items-center justify-center p-2"
+                    >
+                      <div
+                        class="w-full flex flex-wrap text-white font-mono items-center"
+                      >
+                        <div
+                          id="toggler-cv-aim"
+                          class="w-8 h-8 rounded text-white text-xs mr-4 flex items-center justify-center"
+                          x-data="{val: $store.global['serviceStates']['aim'] ? 'OFF' : 'ON'}"
+                          @click="pywebview.api.toggleService('cv-aim', $store.global['serviceStates']['cv-aim'] == false ? 'start' : 'stop')"
+                          :class="{ 'bg-green-700': $store.global['serviceStates']['cv-aim'] === true, 'bg-red-700': $store.global['serviceStates']['cv-aim'] === false }"
+                          x-text="val"
+                        >
+                          .
+                        </div>
+                        <!-- window.Alpine.store("global")["serviceStates"] -->
+                        <div>cv-aim</div>
+                      </div>
+                      <iframe
+                        id="iframe-service-aim-enemy"
+                        x-data="window.serviceComponent('aim', 'enemy')"
+                        x-init="init"
+                        x-bind:src="'comps/aimemitter.html?id=enemy&maxBPM=190&devMode='+devMode+''"
+                        scrollbars="none"
+                        x-show="devMode"
+                        class="comp-aim-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                      <!-- &maxRadius=160&divider=1 -->
+                      <iframe
+                        id="iframe-service-aim-plus"
+                        x-data="window.serviceComponent('aim', 'plus')"
+                        x-init="init"
+                        x-bind:src="'comps/aimemitter.html?id=plus&maxRadius=640&maxBPM=260&devMode='+devMode+''"
+                        scrollbars="none"
+                        class="comp-aim-emitter h-[270px] w-full"
+                        width="100%"
+                        frameborder="0"
+                      ></iframe>
+                    </div>
+                  </div>
+                  <!--  -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Modal -->
+      <template id="custom-html-notif">
+        <div
+          class="flex max-w-xs overflow-hidden rounded-lg text-slate-700 dark:text-navy-100 bg-slate-150 dark:bg-navy-600 font-normal"
+        >
+          <div class="flex items-start">
+            <div id="msgimg" class="avatar h-10 w-10">
+              <!-- <div
+            class="absolute right-0 h-3 w-3 rounded-full border-2 border-navy-600 bg-primary dark:bg-accent"
+          ></div> -->
+            </div>
+          </div>
+          <div class="p-2">
+            <div class="flex items-center justify-between space-x-2">
+              <h5
+                id="msghead"
+                class="font-medium tracking-wide line-clamp-1 lg:text-base"
+              ></h5>
+              <button
+                data-notification-remove
+                class="btn h-7 w-7 rounded-full p-0 hover:bg-white/20 focus:bg-white/20 active:bg-white/25"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+            <p id="msgbody"></p>
+            <div class="flex justify-end px-3 py-1">
+              <!-- <a href="#" class="uppercase text-accent-light hover:underline"
+            >show</a
+          > -->
+            </div>
+          </div>
+        </div>
+      </template>
+    </div>
+  </div>
+</div>

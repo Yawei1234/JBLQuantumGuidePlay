@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(for pipe:*)",
+      "Bash(do echo:*)",
+      "Read(//c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/**)",
+      "Bash(done)",
+      "Bash(python3 -c \"import cmd; help\\(cmd.Cmd.cmdloop\\)\" 2>/dev/null | head -5)",
+      "Bash(python3 -c \"import sys; sys.path.append\\('C:/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/osc_tts_server'\\); from server import GuidePlayCLI; print\\('import ok'\\)\" 2>&1 | head -20)",
+      "Bash(python3 -c \"import cmd; c = cmd.Cmd\\(\\); print\\(type\\(c.cmdloop\\)\\)\")",
+      "Bash(find /usr -name \"cmd.py\" -type f 2>/dev/null | head -1 | xargs grep -A 3 \"def cmdloop\")",
+      "Bash(ls -la /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/*.py | wc -l)",
+      "Bash(python3 -c \"import mjpeg_streamer\" 2>&1 || echo \"NOT_INSTALLED\")",
+      "Bash(grep -r \"mjpeg_streamer\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/*.py 2>/dev/null | cut -d: -f1 | sort -u)",
+      "Bash(grep -n \"AppComponents\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\HtmlParticles\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/AppComponents/mr_API.py)",
+      "Bash(grep -n \"AppComponents\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/AppComponents/mr_API.py)",
+      "Bash(grep -n \"\\\\\\\\\\\\\\\\HtmlParticles\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/AppComponents/mr_API.py)",
+      "Bash(ls -la /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/tracker* 2>/dev/null || echo \"No tracker files in app/\")",
+      "Bash(grep -r \"gamestates_ref\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/*.py 2>/dev/null)",
+      "Bash(grep -n \"from sound import Emission\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/*.py)",
+      "Bash(grep -rn \"\\\\.replace\\(\" /c/Users/jerry/Desktop/JBL-Quantum-Guide-Play-Source/guide-play-main/app/*.py | grep -v \"=\" | grep \"\\\\.replace\\(\" | head -20)",
+      "Bash(\"C:/Users/jerry/miniconda3/envs/guideplay/python.exe\" -c \"import windows_capture; print\\(windows_capture.__version__\\)\")",
+      "Bash(\"C:/Users/jerry/miniconda3/envs/guideplay/python.exe\" -c \"import importlib.metadata; print\\(importlib.metadata.version\\(''windows-capture''\\)\\)\")",
+      "Bash(\"C:/Users/jerry/miniconda3/envs/guideplay/python.exe\" -c \":*)",
+      "Bash(python3 -c \"import json; d=json.load\\(open\\(''C:/Users/jerry/Documents/guideplay_config.json''\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\(''C:/Users/jerry/Documents/guideplay_config.json''\\)\\); print\\(list\\(d.keys\\(\\)\\)\\)\")"
+    ]
+  }
+}
